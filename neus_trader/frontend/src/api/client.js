@@ -63,6 +63,10 @@ export const tradingAPI = {
 
   // Diagnostics
   getDiagnostics: () => apiClient.get('/api/diagnostics'),
+
+  // Phase 2: Multi-agent system
+  getAgentDecisions: () => apiClient.get('/api/agent-decisions'),
+  getAgentStats: () => apiClient.get('/api/agent-stats'),
 };
 
 // WebSocket for real-time updates

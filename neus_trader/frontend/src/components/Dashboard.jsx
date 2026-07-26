@@ -11,6 +11,7 @@ import PerformanceChart from './PerformanceChart';
 import MarketStatePanel from './MarketStatePanel';
 import AlertsPanel from './AlertsPanel';
 import ControlPanel from './ControlPanel';
+import AgentPanel from './AgentPanel';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -136,6 +137,9 @@ const Dashboard = () => {
         <div className="dashboard-column-right">
           {/* Positions */}
           <PositionsPanel positions={positions} />
+
+          {/* Phase 2: Multi-Agent System */}
+          <AgentPanel />
         </div>
       </div>
 

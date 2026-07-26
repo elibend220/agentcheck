@@ -59,7 +59,7 @@
 /* Main Grid */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr 1fr;
+  grid-template-columns: 1fr 1.5fr 1.2fr;
   gap: var(--spacing-lg);
   padding: var(--spacing-xl);
   overflow: auto;
