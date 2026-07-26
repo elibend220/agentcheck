@@ -67,7 +67,10 @@ class HistoricalBacktester:
         self.trades: List[Dict] = []
         self.equity_history: List[float] = []
         self.candle_count = 0
-        self.start_equity = engine.risk_manager.capital
+        self.start_equity = engine.risk_manager.current_capital
+        self._close_prices: List[float] = []
+        self._prev_ema9: Optional[float] = None
+        self._prev_ema21: Optional[float] = None
 
     def load_data_from_csv(self, csv_path: str) -> pd.DataFrame:
         """
@@ -181,7 +184,7 @@ class HistoricalBacktester:
 
                 # Log progress every 1000 candles
                 if (idx + 1) % 1000 == 0:
-                    equity = self.engine.risk_manager.capital
+                    equity = self.engine.risk_manager.current_capital
                     self.logger.info(
                         f"Processed {idx + 1}/{len(candles)} candles | Equity: ${equity:.2f}"
                     )
@@ -203,6 +206,9 @@ class HistoricalBacktester:
         """Process a single candle through the engine."""
         try:
             # Update engine state
+            if not hasattr(self.engine, 'last_candle'):
+                self.engine.last_candle = {}
+
             self.engine.last_candle = {
                 'timestamp': candle['timestamp'],
                 'open': candle['open'],
@@ -215,8 +221,10 @@ class HistoricalBacktester:
             # Update volatility estimate
             if self.candle_count > 20:
                 recent_closes = [candle['close']]  # Simplified
-                returns = np.diff(recent_closes)
+                returns = np.diff(recent_closes) if len(recent_closes) > 1 else []
                 if len(returns) > 0:
+                    if not hasattr(self.engine, 'volatility_estimate'):
+                        self.engine.volatility_estimate = 0.0
                     self.engine.volatility_estimate = np.std(returns) * np.sqrt(252)
 
             # Check stop losses and take profits
@@ -233,7 +241,7 @@ class HistoricalBacktester:
                 self._execute_signal(signal, candle)
 
             # Track equity
-            self.equity_history.append(self.engine.risk_manager.capital)
+            self.equity_history.append(self.engine.risk_manager.current_capital)
             self.candle_count += 1
 
         except Exception as e:
@@ -241,9 +249,46 @@ class HistoricalBacktester:
 
     def _get_signal_phase1(self, candle: pd.Series) -> Optional[Dict]:
         """Generate signal using Phase 1 single agent logic."""
-        # Simplified: Use order flow analyzer for entries
-        # In production, would call engine.check_for_signals()
+        self._close_prices.append(candle['close'])
+        if len(self._close_prices) > 100:
+            self._close_prices.pop(0)
+
+        if len(self._close_prices) < 30:
+            return None
+
+        # Calculate EMAs
+        ema9 = self._calc_ema(self._close_prices[-30:], 9)
+        ema21 = self._calc_ema(self._close_prices[-30:], 21)
+
+        if self._prev_ema9 is None:
+            self._prev_ema9 = ema9
+            self._prev_ema21 = ema21
+            return None
+
+        # Crossover signals
+        if self._prev_ema9 <= self._prev_ema21 and ema9 > ema21:
+            self._prev_ema9 = ema9
+            self._prev_ema21 = ema21
+            return {'direction': 'LONG', 'confidence': 0.6, 'source': 'ema_crossover'}
+        elif self._prev_ema9 >= self._prev_ema21 and ema9 < ema21:
+            self._prev_ema9 = ema9
+            self._prev_ema21 = ema21
+            return {'direction': 'SHORT', 'confidence': 0.6, 'source': 'ema_crossover'}
+
+        self._prev_ema9 = ema9
+        self._prev_ema21 = ema21
         return None
+
+    def _calc_ema(self, prices: List[float], period: int) -> float:
+        """Calculate EMA for a list of prices."""
+        if len(prices) < period:
+            return prices[-1] if prices else 0.0
+
+        multiplier = 2.0 / (period + 1)
+        ema = sum(prices[:period]) / period
+        for price in prices[period:]:
+            ema = price * multiplier + ema * (1 - multiplier)
+        return ema
 
     def _get_signal_from_julia(self, candle: pd.Series) -> Optional[Dict]:
         """Generate signal using Phase 2 multi-agent consensus."""
@@ -258,10 +303,10 @@ class HistoricalBacktester:
         }]
 
         engine_state_data = {
-            'symbol': self.engine.symbol,
+            'symbol': getattr(self.engine, 'symbol', 'ETHUSDT'),
             'current_price': candle['close'],
-            'capital': self.engine.risk_manager.capital,
-            'equity': self.engine.risk_manager.capital,
+            'capital': self.engine.risk_manager.current_capital,
+            'equity': self.engine.risk_manager.current_capital,
             'drawdown_pct': 0.0,
             'open_positions': len(self.engine.open_positions),
             'total_trades': len(self.trades),
@@ -316,11 +361,10 @@ class HistoricalBacktester:
         confidence = signal.get('confidence', 0.5)
         entry_price = candle['close']
 
-        # Calculate position size
-        risk_params = self.engine.risk_manager.get_risk_parameters(
-            self.engine.volatility_estimate
-        )
-        position_size = risk_params.position_size
+        # Conservative position sizing: 0.5% of equity per trade
+        current_equity = self.engine.risk_manager.current_capital
+        position_value = current_equity * 0.005  # 0.5% risk per trade
+        position_size = position_value / entry_price  # Convert to units
 
         # Create trade
         trade_id = f"trade_{len(self.trades)}"
@@ -370,7 +414,7 @@ class HistoricalBacktester:
         self.trades.append(trade_record)
 
         # Update capital
-        self.engine.risk_manager.capital += pnl
+        self.engine.risk_manager.current_capital += pnl
 
         # Remove from open positions
         del self.engine.open_positions[trade_id]

@@ -195,7 +195,7 @@ class LedgerWorker(threading.Thread):
         """Signal worker to stop (graceful shutdown)"""
         self.logger.info("Stopping LedgerWorker...")
         self.stop_event.set()
-        self.join(timeout=5.0)
-
         if self.is_alive():
-            self.logger.error("LedgerWorker did not stop gracefully")
+            self.join(timeout=5.0)
+            if self.is_alive():
+                self.logger.error("LedgerWorker did not stop gracefully")

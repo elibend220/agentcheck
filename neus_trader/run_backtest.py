@@ -19,7 +19,8 @@ import pandas as pd
 import numpy as np
 
 # Add project root to path
-sys.path.insert(0, str(Path(__file__).parent / 'neus_trader' / 'python_core'))
+python_core_path = str(Path(__file__).parent / 'python_core')
+sys.path.insert(0, python_core_path)
 
 from backtester import HistoricalBacktester, BacktestMetrics
 from scalping_engine import GoldenHourScalpingEngine
@@ -40,9 +41,7 @@ def create_engine(use_julia: bool = False) -> GoldenHourScalpingEngine:
     """Create a trading engine instance."""
     engine = GoldenHourScalpingEngine(
         symbol='ETHUSDT',
-        timeframe='5m',
-        capital=10000.0,
-        use_paper_trading=True
+        initial_capital=10000.0
     )
 
     # Add Julia bridge if requested
@@ -116,7 +115,10 @@ def run_phase1_backtest(candles: pd.DataFrame, output_dir: Path) -> BacktestMetr
         logger.info(f"  Win Rate: {metrics.win_rate*100:.1f}%")
         logger.info(f"  Total P&L: ${metrics.total_pnl:.2f} ({metrics.total_pnl_pct*100:.2f}%)")
         logger.info(f"  Max Drawdown: {metrics.max_drawdown_pct*100:.2f}%")
-        logger.info(f"  Sharpe Ratio: {metrics.sharpe_ratio:.2f}" if metrics.sharpe_ratio else "  Sharpe Ratio: N/A")
+        if metrics.sharpe_ratio:
+            logger.info(f"  Sharpe Ratio: {metrics.sharpe_ratio:.2f}")
+        else:
+            logger.info("  Sharpe Ratio: N/A")
         logger.info(f"  Final Equity: ${metrics.final_equity:.2f}")
 
         return metrics
