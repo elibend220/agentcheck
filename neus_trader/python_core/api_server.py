@@ -2,6 +2,9 @@
 Trading Engine API Server (FastAPI)
 Provides REST API for frontend dashboard and external integrations.
 Decouples trading logic from presentation layer.
+
+Phase 2: Multi-agent decision support via Julia bridge.
+Falls back to Phase 1 (single agent) if Julia unavailable.
 """
 
 import logging
@@ -12,12 +15,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import json
 import asyncio
+from pathlib import Path
 
 from scalping_engine import GoldenHourScalpingEngine, ScalpingSignal
 from adaptive_risk import AdaptiveRiskManager
 from market_hours import MarketHourDetector
 from bifurcation_diagnostics import BifurcationMonitor
 from monitoring import MonitoringSystem
+from julia_bridge import JuliaBridge, JuliaDecision
 
 
 # ============================================================================
@@ -117,6 +122,34 @@ class AlertResponse(BaseModel):
     timestamp: str
 
 
+class AgentVoteResponse(BaseModel):
+    """Individual agent decision"""
+    agent_id: str
+    direction: str
+    confidence: float
+    reasoning: str
+
+
+class AgentDecisionResponse(BaseModel):
+    """Multi-agent consensus decision"""
+    direction: str
+    confidence: float
+    consensus_strength: float
+    risk_approved: bool
+    agent_votes: List[AgentVoteResponse]
+    timestamp: str
+
+
+class AgentStatsResponse(BaseModel):
+    """Agent system statistics"""
+    is_julia_running: bool
+    decisions_processed: int
+    avg_latency_ms: float
+    max_latency_ms: float
+    error_count: int
+    agent_weights: Dict[str, float]
+
+
 # ============================================================================
 # FastAPI Application
 # ============================================================================
@@ -136,8 +169,8 @@ class TradingAPIServer:
         # FastAPI app
         self.app = FastAPI(
             title="NEUS_TRADER API",
-            description="High-frequency scalping engine REST API",
-            version="1.0.0"
+            description="High-frequency scalping engine REST API with multi-agent consensus",
+            version="2.0.0"
         )
 
         # CORS middleware for frontend
@@ -155,10 +188,25 @@ class TradingAPIServer:
         # Diagnostics
         self.bifurcation_monitor = BifurcationMonitor()
 
+        # Phase 2: Julia multi-agent bridge (optional)
+        julia_path = Path(__file__).parent.parent / "julia"
+        self.julia_bridge = JuliaBridge(str(julia_path))
+        self.use_julia_agents = False
+
+        # Try to start Julia agents (graceful fallback if unavailable)
+        try:
+            if self.julia_bridge.start():
+                self.use_julia_agents = True
+                self.logger.info("Julia multi-agent system started (Phase 2 enabled)")
+            else:
+                self.logger.warning("Julia multi-agent system failed to start, using Phase 1 single agent")
+        except Exception as e:
+            self.logger.warning(f"Julia multi-agent system unavailable: {e}, using Phase 1 single agent")
+
         # Register routes
         self._register_routes()
 
-        self.logger.info(f"Trading API Server initialized: {host}:{port}")
+        self.logger.info(f"Trading API Server initialized: {host}:{port} (Julia: {self.use_julia_agents})")
 
     def _register_routes(self):
         """Register all API routes"""
@@ -300,6 +348,71 @@ class TradingAPIServer:
                 }
             }
 
+        # Phase 2: Agent decisions
+        @self.app.get("/api/agent-decisions", response_model=Optional[AgentDecisionResponse])
+        async def get_agent_decisions():
+            """Get latest multi-agent consensus decision."""
+            if not self.use_julia_agents:
+                return None
+
+            # Prepare data for Julia
+            candles_data = self._prepare_candles_for_julia()
+            engine_state_data = self._prepare_engine_state_for_julia()
+            prices_data = self._prepare_prices_for_julia()
+
+            # Get decision from Julia
+            decision = self.julia_bridge.send_decision_request(
+                candles_data, engine_state_data, prices_data
+            )
+
+            if not decision:
+                return None
+
+            # Convert to response format
+            agent_votes = []
+            for agent_id, vote in decision.agent_votes.items():
+                agent_votes.append(AgentVoteResponse(
+                    agent_id=agent_id,
+                    direction=vote.get('direction', 'HOLD'),
+                    confidence=vote.get('confidence', 0.0),
+                    reasoning=vote.get('reasoning', '')
+                ))
+
+            return AgentDecisionResponse(
+                direction=decision.direction,
+                confidence=decision.confidence,
+                consensus_strength=decision.consensus_strength,
+                risk_approved=decision.risk_approved,
+                agent_votes=agent_votes,
+                timestamp=decision.timestamp
+            )
+
+        # Phase 2: Agent statistics
+        @self.app.get("/api/agent-stats", response_model=AgentStatsResponse)
+        async def get_agent_stats():
+            """Get multi-agent system statistics."""
+            if not self.use_julia_agents:
+                stats = {
+                    'is_julia_running': False,
+                    'decisions_processed': 0,
+                    'avg_latency_ms': 0.0,
+                    'max_latency_ms': 0.0,
+                    'error_count': 0,
+                    'agent_weights': {}
+                }
+            else:
+                julia_stats = self.julia_bridge.get_stats()
+                stats = {
+                    'is_julia_running': julia_stats.get('is_running', False),
+                    'decisions_processed': julia_stats.get('decisions_processed', 0),
+                    'avg_latency_ms': julia_stats.get('avg_latency_ms', 0.0),
+                    'max_latency_ms': julia_stats.get('max_latency_ms', 0.0),
+                    'error_count': julia_stats.get('errors', 0),
+                    'agent_weights': {}
+                }
+
+            return AgentStatsResponse(**stats)
+
         # WebSocket for real-time updates
         @self.app.websocket("/ws/market-updates")
         async def websocket_endpoint(websocket: WebSocket):
@@ -319,6 +432,47 @@ class TradingAPIServer:
                 self.websocket_clients.remove(websocket)
 
         self.logger.info("API routes registered")
+
+    def _prepare_candles_for_julia(self) -> List[Dict]:
+        """Prepare recent candles for Julia agent analysis."""
+        candles = []
+        # Use last 50 candles from engine history (if available)
+        # For now, return minimal data structure
+        if self.engine.last_candle:
+            candles.append({
+                'timestamp': datetime.utcnow().isoformat(),
+                'open': self.engine.last_candle.get('open', 0.0),
+                'high': self.engine.last_candle.get('high', 0.0),
+                'low': self.engine.last_candle.get('low', 0.0),
+                'close': self.engine.last_candle.get('close', 0.0),
+                'volume': self.engine.last_candle.get('volume', 0.0)
+            })
+        return candles
+
+    def _prepare_engine_state_for_julia(self) -> Dict:
+        """Prepare current engine state for Julia agent analysis."""
+        metrics = self.engine.risk_manager.get_metrics()
+        return {
+            'symbol': self.engine.symbol,
+            'current_price': self.engine.last_candle.get('close', 0.0) if self.engine.last_candle else 0.0,
+            'capital': metrics.get('capital', 0.0),
+            'equity': metrics.get('capital', 0.0),
+            'drawdown_pct': metrics.get('drawdown_pct', 0.0),
+            'open_positions': len(self.engine.open_positions),
+            'total_trades': metrics.get('total_trades', 0),
+            'win_rate': metrics.get('win_rate', 0.5),
+            'last_trade_pnl': 0.0,
+            'is_running': self.engine.is_running
+        }
+
+    def _prepare_prices_for_julia(self) -> Dict[str, float]:
+        """Prepare multi-venue prices for arbitrage agent (placeholder)."""
+        # In production, would fetch prices from multiple exchanges
+        current_price = self.engine.last_candle.get('close', 0.0) if self.engine.last_candle else 0.0
+        return {
+            'binance': current_price,
+            'coinbase': current_price
+        }
 
     async def broadcast_update(self, data: Dict):
         """Broadcast update to all connected WebSocket clients"""
