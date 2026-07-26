@@ -14,6 +14,8 @@ from market_hours import MarketHourDetector, TradingSession
 from order_flow import OrderFlowAnalyzer, OrderFlowSignal
 from trade_logger import TradeLogger
 from monitoring import MonitoringSystem, AlertLevel
+from ring_buffer import RingBuffer, EventBuffer
+from ledger_worker import LedgerWorker
 
 
 @dataclass
@@ -59,6 +61,16 @@ class GoldenHourScalpingEngine:
         self.order_flow = OrderFlowAnalyzer(lookback_periods=50)
         self.trade_logger = TradeLogger(fallback_file="/tmp/neus_trades.jsonl")
         self.monitor = MonitoringSystem()
+
+        # Bifurcated architecture: In-memory ring buffer + background worker
+        self.ring_buffer = RingBuffer(max_size=10000)
+        self.event_buffer = EventBuffer(self.ring_buffer)
+        self.ledger_worker = LedgerWorker(
+            ring_buffer=self.ring_buffer,
+            trade_logger=self.trade_logger,
+            batch_size=50,
+            flush_interval_sec=2.0
+        )
 
         # State
         self.is_running = False
@@ -122,8 +134,8 @@ class GoldenHourScalpingEngine:
                         f"Size: ${scalping_signal.position_size:.2f}"
                     )
 
-                    # Log signal
-                    self.trade_logger.log_signal(
+                    # Enqueue signal (non-blocking, memory-only)
+                    self.event_buffer.enqueue_signal(
                         symbol=self.symbol,
                         signal_type="scalping",
                         direction=scalping_signal.direction,
@@ -332,8 +344,8 @@ class GoldenHourScalpingEngine:
             take_profit=position['tp2']
         )
 
-        # Log trade
-        self.trade_logger.log_trade(
+        # Enqueue trade (non-blocking, memory-only)
+        self.event_buffer.enqueue_trade(
             symbol=self.symbol,
             direction=position['direction'],
             entry_price=position['entry_price'],
@@ -382,10 +394,14 @@ class GoldenHourScalpingEngine:
     def start(self):
         """Start the scalping engine"""
         self.is_running = True
-        self.logger.info(f"Scalping engine started")
+        # Start background ledger worker (critical path unaffected)
+        self.ledger_worker.start()
+        self.logger.info(f"Scalping engine started with background ledger worker")
 
     def stop(self):
         """Stop the scalping engine"""
         self.is_running = False
+        # Gracefully shutdown background worker (flushes remaining events)
+        self.ledger_worker.stop()
         self.logger.info(f"Scalping engine stopped")
         self.trade_logger.close()
