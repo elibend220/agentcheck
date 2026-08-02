@@ -25,7 +25,8 @@ SUMMARY: <1-2 sentence summary>"""
         raw_input = state.get("raw_input", "")
 
         if not raw_input:
-            return {"error": "No input provided"}
+            state["error"] = "No input provided"
+            return state
 
         # Call LLM for NLP analysis
         prompt = self._make_prompt(raw_input)
@@ -37,15 +38,16 @@ SUMMARY: <1-2 sentence summary>"""
         # Log interaction
         self.log_interaction(raw_input, response)
 
-        # Update state
-        return {
+        # Update state (preserve existing fields)
+        state.update({
             "processed_text": raw_input,
             "parsed_intent": intent,
             "entities": entities,
             "summary": summary,
             "current_stage": ProcessingStage.NLP_PROCESSING,
             "agent_chain": state.get("agent_chain", []) + [self.name],
-        }
+        })
+        return state
 
     def _parse_nlp_response(self, response: str) -> tuple[str, list[str], str]:
         """Parse LLM NLP analysis response."""
