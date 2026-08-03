@@ -231,6 +231,22 @@ class FullAgentState(TypedDict, total=False):
     verification_confidence: float
     phase10_summary: str
 
+    # === Phase 11: Proactive Personal Assistant ===
+    user_profile: dict[str, Any]
+    user_status: str
+    user_preferences: dict[str, Any]
+    user_patterns: list[str]
+    predicted_needs: list[str]
+    proactive_suggestions: list[str]
+    anticipation_confidence: float
+    priority_actions: list[str]
+    autonomous_actions: list[str]
+    action_priorities: list[str]
+    action_risks: list[str]
+    requires_confirmation: bool
+    assistant_ready: bool
+    phase11_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

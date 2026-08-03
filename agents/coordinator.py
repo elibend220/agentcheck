@@ -38,6 +38,12 @@ from agents.phase10_planning import (
     make_plan_verification_node,
     make_planning_summary_node,
 )
+from agents.phase11_personal_assistant import (
+    make_user_profile_node,
+    make_predictive_assistance_node,
+    make_autonomous_action_node,
+    make_personal_assistant_summary_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -47,7 +53,7 @@ LLMFn = Callable[[str], str]
 
 class AgentCoordinator:
     """
-    Orchestrates all 10 phases:
+    Orchestrates all 11 phases:
 
     Phase 1: NLP (intent, entities)
     Phase 2: Knowledge (semantic retrieval)
@@ -76,6 +82,10 @@ class AgentCoordinator:
     Phase 10b: Plan Generation (create step-by-step execution plan)
     Phase 10c: Plan Verification (validate feasibility and risks)
     Phase 10d: Planning Summary (report plan and strategy)
+    Phase 11a: User Profile (build user model)
+    Phase 11b: Predictive Assistance (anticipate needs)
+    Phase 11c: Autonomous Action (recommend actions)
+    Phase 11d: Personal Assistant Summary (JARVIS-like response)
     """
 
     def __init__(
@@ -91,6 +101,7 @@ class AgentCoordinator:
         enable_phase8: bool = True,
         enable_phase9: bool = True,
         enable_phase10: bool = True,
+        enable_phase11: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -104,6 +115,7 @@ class AgentCoordinator:
         self.enable_phase8 = enable_phase8
         self.enable_phase9 = enable_phase9
         self.enable_phase10 = enable_phase10
+        self.enable_phase11 = enable_phase11
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -226,6 +238,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase10d_planning_summary",
                 make_planning_summary_node(self.llm),
+            )
+
+        # Phase 11 (always included if enabled)
+        if self.enable_phase11:
+            graph.add_node(
+                "phase11a_user_profile",
+                make_user_profile_node(self.llm),
+            )
+            graph.add_node(
+                "phase11b_predictive_assistance",
+                make_predictive_assistance_node(self.llm),
+            )
+            graph.add_node(
+                "phase11c_autonomous_action",
+                make_autonomous_action_node(self.llm),
+            )
+            graph.add_node(
+                "phase11d_assistant_summary",
+                make_personal_assistant_summary_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -448,7 +479,18 @@ class AgentCoordinator:
             graph.add_edge("phase10a_goal_decomposition", "phase10b_plan_generation")
             graph.add_edge("phase10b_plan_generation", "phase10c_plan_verification")
             graph.add_edge("phase10c_plan_verification", "phase10d_planning_summary")
-            graph.add_edge("phase10d_planning_summary", END)
+
+            if self.enable_phase11:
+                graph.add_edge("phase10d_planning_summary", "phase11a_user_profile")
+            else:
+                graph.add_edge("phase10d_planning_summary", END)
+
+        # Phase 11 edges (if enabled)
+        if self.enable_phase11:
+            graph.add_edge("phase11a_user_profile", "phase11b_predictive_assistance")
+            graph.add_edge("phase11b_predictive_assistance", "phase11c_autonomous_action")
+            graph.add_edge("phase11c_autonomous_action", "phase11d_assistant_summary")
+            graph.add_edge("phase11d_assistant_summary", END)
 
         return graph.compile()
 
