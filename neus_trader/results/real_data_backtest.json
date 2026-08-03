@@ -1,0 +1,35 @@
+{
+  "data_period": "2 weeks (4,032 candles)",
+  "traditional": {
+    "strategy": "EMA_ONLY",
+    "total_trades": 158,
+    "winning_trades": 43,
+    "losing_trades": 115,
+    "win_rate": 0.2721518987341772,
+    "total_pnl": 1.2840283832065325,
+    "total_pnl_pct": 0.012840283832065324,
+    "final_capital": 10001.284028383207
+  },
+  "enhanced": {
+    "strategy": "EMA_FLOW",
+    "total_trades": 110,
+    "winning_trades": 27,
+    "losing_trades": 83,
+    "win_rate": 0.24545454545454545,
+    "total_pnl": -6690.6800521037785,
+    "total_pnl_pct": -66.9068005210378,
+    "final_capital": 3309.319947896222,
+    "signal_stats": {
+      "ema_only": 0,
+      "ema_flow_combined": 110,
+      "flow_only": 0
+    }
+  },
+  "comparison": {
+    "trade_reduction_pct": -30.37974683544304,
+    "win_rate_improvement_pct": -2.669735327963177,
+    "pnl_improvement_usd": -6691.964080486985,
+    "pnl_improvement_pct": -66.91964080486986,
+    "efficiency_improvement": -60.83249087195338
+  }
+}
