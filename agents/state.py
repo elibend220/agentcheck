@@ -173,6 +173,24 @@ class FullAgentState(TypedDict, total=False):
     learning_metrics: dict[str, float]
     phase6_summary: str
 
+    # === Phase 7: Persistent Memory & Knowledge Integration ===
+    memory_persisted: bool
+    memory_size: int
+    similar_past_executions: int
+    historical_lessons: list[str]
+    historical_best_tools: list[str]
+    historical_suggestions: list[str]
+    best_tool_combinations: list[dict[str, Any]]
+    execution_statistics: dict[str, Any]
+    tool_statistics: dict[str, dict[str, Any]]
+    common_lessons: list[tuple[str, int]]
+    high_confidence_suggestions: list[str]
+    phase7_synthesis: str
+    phase7_insights: list[str]
+    phase7_confidence: float
+    phase7_recommended_approach: str
+    phase7_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool
