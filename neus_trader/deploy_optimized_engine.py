@@ -98,28 +98,47 @@ class OptimizedEnginePaperTrading:
             # Start the optimized engine
             self.engine.start()
 
-            # Connect to Binance WebSocket
-            self.logger.info(f"📡 Connecting to Binance WebSocket for {self.symbol}...")
-            self.ws_client = BinanceWebSocketClient()
-
             # Set up candle callback
             async def on_candle(candle_data: Dict):
                 await self._process_candle(candle_data)
 
-            # Subscribe to kline updates
-            await self.ws_client.subscribe_klines(self.symbol, '5m', on_candle)
+            # Connect to Binance WebSocket
+            self.logger.info(f"📡 Connecting to Binance WebSocket for {self.symbol}...")
+            self.ws_client = BinanceWebSocketClient(
+                symbol=self.symbol,
+                interval='5m',
+                callback=on_candle
+            )
 
-            # Keep session running
             self.logger.info("✓ Connected! Waiting for candle data...")
             self.logger.info("-" * 80)
 
-            # Run until max duration or user interrupt
+            # Create tasks for WebSocket and duration timeout
+            tasks = []
+
+            # Task 1: Run WebSocket
+            ws_task = asyncio.create_task(self.ws_client.run())
+            tasks.append(ws_task)
+
+            # Task 2: Timeout after max_duration_hours (if specified)
             if self.max_duration_hours:
-                await asyncio.sleep(self.max_duration_hours * 3600)
+                timeout_task = asyncio.create_task(
+                    asyncio.sleep(self.max_duration_hours * 3600)
+                )
+                tasks.append(timeout_task)
+
+                # Wait for either timeout or WebSocket to finish
+                done, pending = await asyncio.wait(
+                    tasks,
+                    return_when=asyncio.FIRST_COMPLETED
+                )
+
+                # Cancel remaining tasks
+                for task in pending:
+                    task.cancel()
             else:
-                # Run indefinitely
-                while True:
-                    await asyncio.sleep(1)
+                # Run indefinitely until interrupted
+                await ws_task
 
         except KeyboardInterrupt:
             self.logger.info("\n\n⏹️  Session interrupted by user")
@@ -215,7 +234,7 @@ class OptimizedEnginePaperTrading:
 
         # Close WebSocket
         if self.ws_client:
-            await self.ws_client.close()
+            await self.ws_client.disconnect()
             self.logger.info("✓ WebSocket closed")
 
         # Final stats
