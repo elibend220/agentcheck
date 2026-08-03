@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-08-03T19:46:55.720589",
+  "comparison": "Improved Engine: All Hours vs Prime Hours",
+  "all_hours": {
+    "trades": 104,
+    "win_rate": 0.3076923076923077,
+    "pnl": -0.23102256422677608,
+    "pnl_pct": -2.310225642267761e-05,
+    "profit_factor": 0.9859795989839197,
+    "drawdown": -0.000387271900700811,
+    "sharpe": -0.010464403245352197
+  },
+  "prime_hours": {
+    "trades": 57,
+    "win_rate": 0.3333333333333333,
+    "pnl": 3.0852353825784693,
+    "pnl_pct": 0.00030852353825784693,
+    "profit_factor": 1.2839056639391049,
+    "drawdown": -0.00031430111746740295,
+    "sharpe": 0.1960768420636332
+  },
+  "improvements": {
+    "trade_reduction_pct": -45.19230769230769,
+    "win_rate_change_pct": 2.5641025641025603,
+    "profit_factor_change": 0.29792606495518514,
+    "pnl_change": 3.3162579468052455
+  }
+}
