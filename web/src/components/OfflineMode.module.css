@@ -1,0 +1,72 @@
+.offlineBanner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(90deg, #ff6b6b, #ff8e00);
+  color: white;
+  padding: 12px 20px;
+  z-index: 2000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.icon {
+  font-size: 1.2rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.text {
+  flex: 1;
+}
+
+.syncStatus {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+}
+
+/* Adjust main content when offline banner is shown */
+@media (max-width: 768px) {
+  .offlineBanner {
+    padding: 10px 12px;
+  }
+
+  .content {
+    font-size: 0.85rem;
+    gap: 8px;
+  }
+
+  .icon {
+    font-size: 1rem;
+  }
+}

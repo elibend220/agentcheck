@@ -1,0 +1,190 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #16213e;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.header h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.8rem;
+  color: #00d4ff;
+}
+
+.header p {
+  margin: 0;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.sessionCount {
+  background-color: rgba(0, 212, 255, 0.1);
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #00d4ff;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #16213e;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.emptyState h2 {
+  font-size: 1.4rem;
+  color: #00d4ff;
+  margin-bottom: 8px;
+}
+
+.emptyState p {
+  color: #888;
+  max-width: 300px;
+  margin-bottom: 24px;
+}
+
+.newSessionBtn {
+  background-color: #00d4ff;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.newSessionBtn:hover {
+  background-color: #00ffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.sessionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.sessionCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background-color: #16213e;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-left: 4px solid #00d4ff;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sessionCard:hover {
+  background-color: rgba(0, 212, 255, 0.05);
+  border-color: #00d4ff;
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.2);
+  transform: translateX(4px);
+}
+
+.sessionInfo {
+  flex: 1;
+}
+
+.sessionId {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #00d4ff;
+  margin-bottom: 8px;
+}
+
+.sessionId code {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(0, 212, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.sessionMeta {
+  color: #888;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.sessionMessages {
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.deleteBtn {
+  background: none;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+  color: #ff6b6b;
+}
+
+.deleteBtn:hover {
+  background-color: rgba(255, 107, 107, 0.1);
+  border-color: #ff6b6b;
+  transform: scale(1.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .sessionCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .deleteBtn {
+    align-self: flex-end;
+    margin-top: -8px;
+  }
+}
