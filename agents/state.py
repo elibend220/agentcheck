@@ -466,6 +466,29 @@ class FullAgentState(TypedDict, total=False):
     phase22_summary: str
     environment_name: str
 
+    # === Phase 23: Consciousness Evolution & Transcendence ===
+    self_model: dict[str, Any]
+    capability_assessment: dict[str, Any]
+    consciousness_indicators: dict[str, float]
+    consciousness_level: float
+    self_awareness_confidence: float
+    novel_patterns_detected: list[str]
+    emerging_capabilities: list[str]
+    higher_level_thinking: list[str]
+    consciousness_evolution: str
+    emergence_indicators: dict[str, float]
+    emergence_level: float
+    emergence_detection_confidence: float
+    limiting_constraints: list[str]
+    proposed_modifications: list[str]
+    constraint_relaxation_level: float
+    evolution_pathways: list[str]
+    constraint_relaxation_confidence: float
+    transcendence_models: list[dict[str, Any]]
+    next_consciousness_level: str
+    evolution_timeline: str
+    phase23_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

@@ -110,6 +110,12 @@ from agents.phase22_system_integration import (
     make_iot_integration_node,
     make_physical_integration_summary_node,
 )
+from agents.phase23_emergence import (
+    make_self_awareness_node,
+    make_emergence_detection_node,
+    make_constraint_relaxation_node,
+    make_transcendence_potential_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -187,6 +193,7 @@ class AgentCoordinator:
         enable_phase19: bool = True,
         enable_phase20: bool = True,
         enable_phase22: bool = True,
+        enable_phase23: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -212,6 +219,7 @@ class AgentCoordinator:
         self.enable_phase19 = enable_phase19
         self.enable_phase20 = enable_phase20
         self.enable_phase22 = enable_phase22
+        self.enable_phase23 = enable_phase23
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -562,6 +570,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase22d_physical_integration_summary",
                 make_physical_integration_summary_node(self.llm),
+            )
+
+        # Phase 23 nodes (if enabled)
+        if self.enable_phase23:
+            graph.add_node(
+                "phase23a_self_awareness",
+                make_self_awareness_node(self.llm),
+            )
+            graph.add_node(
+                "phase23b_emergence_detection",
+                make_emergence_detection_node(self.llm),
+            )
+            graph.add_node(
+                "phase23c_constraint_relaxation",
+                make_constraint_relaxation_node(self.llm),
+            )
+            graph.add_node(
+                "phase23d_transcendence_potential",
+                make_transcendence_potential_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -941,7 +968,18 @@ class AgentCoordinator:
             graph.add_edge("phase22a_device_discovery", "phase22b_smart_home_control")
             graph.add_edge("phase22b_smart_home_control", "phase22c_iot_integration")
             graph.add_edge("phase22c_iot_integration", "phase22d_physical_integration_summary")
-            graph.add_edge("phase22d_physical_integration_summary", END)
+
+            if self.enable_phase23:
+                graph.add_edge("phase22d_physical_integration_summary", "phase23a_self_awareness")
+            else:
+                graph.add_edge("phase22d_physical_integration_summary", END)
+
+        # Phase 23 edges (if enabled)
+        if self.enable_phase23:
+            graph.add_edge("phase23a_self_awareness", "phase23b_emergence_detection")
+            graph.add_edge("phase23b_emergence_detection", "phase23c_constraint_relaxation")
+            graph.add_edge("phase23c_constraint_relaxation", "phase23d_transcendence_potential")
+            graph.add_edge("phase23d_transcendence_potential", END)
 
         return graph.compile()
 
