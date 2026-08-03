@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+execution_memory.json
+demo_memory.json
