@@ -1,0 +1,17 @@
+{
+  "mode": "Phase 1 (Single Agent)",
+  "total_trades": 1057,
+  "winning_trades": 357,
+  "losing_trades": 700,
+  "win_rate": 0.33774834437086093,
+  "total_pnl": 30.58561829822216,
+  "total_pnl_pct": 0.0030585618298222157,
+  "max_drawdown_pct": -0.00026970236038836756,
+  "sharpe_ratio": 0.29100526975907226,
+  "avg_trade_duration_sec": 1236,
+  "best_trade_pnl": 0.7974861619226978,
+  "worst_trade_pnl": -0.5230900030185094,
+  "consecutive_losses": 0,
+  "equity_peak": 10031.440539660614,
+  "final_equity": 10030.585618298222
+}
