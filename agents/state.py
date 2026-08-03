@@ -359,6 +359,43 @@ class FullAgentState(TypedDict, total=False):
     optimization_applied_confidence: float
     phase16_summary: str
 
+    # === Phase 17: Constitutional Framework & Values Alignment ===
+    core_mission: str
+    core_values: list[str]
+    foundational_principles: list[str]
+    mission_definition_confidence: float
+    value_alignment_score: float
+    alignment_violations: list[str]
+    alignment_recommendations: list[str]
+    value_alignment_confidence: float
+    enforced_constraints: list[str]
+    blocked_changes: list[str]
+    constraint_violations_detected: bool
+    constraint_enforcement_confidence: float
+    constitutional_framework_established: bool
+    alignment_compliant: bool
+    framework_confidence: float
+    phase17_summary: str
+
+    # === Phase 18: Safety & Mutation Prevention ===
+    detected_mutations: list[str]
+    mutation_risk_level: str
+    risky_modifications: list[str]
+    mutation_analysis_confidence: float
+    safety_checks_passed: bool
+    safety_violations: list[str]
+    quarantined_changes: list[str]
+    safety_validation_confidence: float
+    rollback_checkpoint_created: bool
+    rollback_procedures: list[str]
+    recovery_snapshots: list[str]
+    rollback_manager_confidence: float
+    integrity_check_passed: bool
+    system_protected: bool
+    mutation_prevention_active: bool
+    system_integrity_confidence: float
+    phase18_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

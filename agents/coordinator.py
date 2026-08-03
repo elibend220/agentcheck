@@ -80,6 +80,18 @@ from agents.phase16_system_engineering import (
     make_optimization_recommendation_node,
     make_adaptive_configurator_node,
 )
+from agents.phase17_constitutional_framework import (
+    make_mission_definition_node,
+    make_value_alignment_node,
+    make_constraint_enforcement_node,
+    make_constitutional_charter_node,
+)
+from agents.phase18_safety_mutation import (
+    make_mutation_analysis_node,
+    make_safety_validator_node,
+    make_rollback_manager_node,
+    make_integrity_checker_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -152,6 +164,8 @@ class AgentCoordinator:
         enable_phase15: bool = True,
         enable_phase21: bool = True,
         enable_phase16: bool = True,
+        enable_phase17: bool = True,
+        enable_phase18: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -172,6 +186,8 @@ class AgentCoordinator:
         self.enable_phase15 = enable_phase15
         self.enable_phase21 = enable_phase21
         self.enable_phase16 = enable_phase16
+        self.enable_phase17 = enable_phase17
+        self.enable_phase18 = enable_phase18
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -427,6 +443,44 @@ class AgentCoordinator:
             graph.add_node(
                 "phase16d_adaptive_configurator",
                 make_adaptive_configurator_node(self.llm),
+            )
+
+        # Phase 17 (always included if enabled)
+        if self.enable_phase17:
+            graph.add_node(
+                "phase17a_mission_definition",
+                make_mission_definition_node(self.llm),
+            )
+            graph.add_node(
+                "phase17b_value_alignment",
+                make_value_alignment_node(self.llm),
+            )
+            graph.add_node(
+                "phase17c_constraint_enforcement",
+                make_constraint_enforcement_node(self.llm),
+            )
+            graph.add_node(
+                "phase17d_constitutional_charter",
+                make_constitutional_charter_node(self.llm),
+            )
+
+        # Phase 18 (always included if enabled)
+        if self.enable_phase18:
+            graph.add_node(
+                "phase18a_mutation_analysis",
+                make_mutation_analysis_node(self.llm),
+            )
+            graph.add_node(
+                "phase18b_safety_validator",
+                make_safety_validator_node(self.llm),
+            )
+            graph.add_node(
+                "phase18c_rollback_manager",
+                make_rollback_manager_node(self.llm),
+            )
+            graph.add_node(
+                "phase18d_integrity_checker",
+                make_integrity_checker_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -751,7 +805,29 @@ class AgentCoordinator:
             graph.add_edge("phase16a_metrics_collection", "phase16b_architecture_analysis")
             graph.add_edge("phase16b_architecture_analysis", "phase16c_optimization_recommendation")
             graph.add_edge("phase16c_optimization_recommendation", "phase16d_adaptive_configurator")
-            graph.add_edge("phase16d_adaptive_configurator", END)
+
+            if self.enable_phase17:
+                graph.add_edge("phase16d_adaptive_configurator", "phase17a_mission_definition")
+            else:
+                graph.add_edge("phase16d_adaptive_configurator", END)
+
+        # Phase 17 edges (if enabled)
+        if self.enable_phase17:
+            graph.add_edge("phase17a_mission_definition", "phase17b_value_alignment")
+            graph.add_edge("phase17b_value_alignment", "phase17c_constraint_enforcement")
+            graph.add_edge("phase17c_constraint_enforcement", "phase17d_constitutional_charter")
+
+            if self.enable_phase18:
+                graph.add_edge("phase17d_constitutional_charter", "phase18a_mutation_analysis")
+            else:
+                graph.add_edge("phase17d_constitutional_charter", END)
+
+        # Phase 18 edges (if enabled)
+        if self.enable_phase18:
+            graph.add_edge("phase18a_mutation_analysis", "phase18b_safety_validator")
+            graph.add_edge("phase18b_safety_validator", "phase18c_rollback_manager")
+            graph.add_edge("phase18c_rollback_manager", "phase18d_integrity_checker")
+            graph.add_edge("phase18d_integrity_checker", END)
 
         return graph.compile()
 
