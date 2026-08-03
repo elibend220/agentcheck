@@ -98,6 +98,12 @@ from agents.phase19_personality import (
     make_personal_relationship_model_node,
     make_character_expression_summary_node,
 )
+from agents.phase20_risk_assessment import (
+    make_consequence_prediction_node,
+    make_risk_communication_node,
+    make_intelligent_refusal_node,
+    make_safety_negotiation_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -173,6 +179,7 @@ class AgentCoordinator:
         enable_phase17: bool = True,
         enable_phase18: bool = True,
         enable_phase19: bool = True,
+        enable_phase20: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -196,6 +203,7 @@ class AgentCoordinator:
         self.enable_phase17 = enable_phase17
         self.enable_phase18 = enable_phase18
         self.enable_phase19 = enable_phase19
+        self.enable_phase20 = enable_phase20
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -508,6 +516,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase19d_character_expression_summary",
                 make_character_expression_summary_node(self.llm),
+            )
+
+        # Phase 20 nodes (if enabled)
+        if self.enable_phase20:
+            graph.add_node(
+                "phase20a_consequence_prediction",
+                make_consequence_prediction_node(self.llm),
+            )
+            graph.add_node(
+                "phase20b_risk_communication",
+                make_risk_communication_node(self.llm),
+            )
+            graph.add_node(
+                "phase20c_intelligent_refusal",
+                make_intelligent_refusal_node(self.llm),
+            )
+            graph.add_node(
+                "phase20d_safety_negotiation",
+                make_safety_negotiation_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -865,7 +892,18 @@ class AgentCoordinator:
             graph.add_edge("phase19a_personality_framework", "phase19b_conversational_generation")
             graph.add_edge("phase19b_conversational_generation", "phase19c_personal_relationship_model")
             graph.add_edge("phase19c_personal_relationship_model", "phase19d_character_expression_summary")
-            graph.add_edge("phase19d_character_expression_summary", END)
+
+            if self.enable_phase20:
+                graph.add_edge("phase19d_character_expression_summary", "phase20a_consequence_prediction")
+            else:
+                graph.add_edge("phase19d_character_expression_summary", END)
+
+        # Phase 20 edges (if enabled)
+        if self.enable_phase20:
+            graph.add_edge("phase20a_consequence_prediction", "phase20b_risk_communication")
+            graph.add_edge("phase20b_risk_communication", "phase20c_intelligent_refusal")
+            graph.add_edge("phase20c_intelligent_refusal", "phase20d_safety_negotiation")
+            graph.add_edge("phase20d_safety_negotiation", END)
 
         return graph.compile()
 

@@ -417,6 +417,32 @@ class FullAgentState(TypedDict, total=False):
     conversational_charm_active: bool
     phase19_summary: str
 
+    # === Phase 20: Proactive Risk Assessment & Intelligent Refusal ===
+    predicted_consequences: list[str]
+    identified_risks: list[str]
+    risk_severity: str
+    harm_assessment: float
+    second_order_effects: list[str]
+    third_order_effects: list[str]
+    consequence_confidence: float
+    risk_warning: str
+    risk_explanation: str
+    alternative_approaches: list[str]
+    negotiation_points: list[str]
+    risk_communication_confidence: float
+    should_refuse: bool
+    refusal_reasoning: str
+    refusal_dialogue: str
+    alternative_suggestions: list[str]
+    concern_expression: str
+    intelligent_refusal_confidence: float
+    negotiation_possible: bool
+    compromise_options: list[str]
+    ethical_explanation: str
+    trust_building_response: str
+    negotiation_confidence: float
+    phase20_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool
