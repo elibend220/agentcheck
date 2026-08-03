@@ -1,0 +1,17 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/elibend220/agentcheck/blob/main/neus_trader/README.md
+    about: Read the system documentation and deployment guide
+
+  - name: 🔍 Backtesting Framework
+    url: https://github.com/elibend220/agentcheck/blob/main/neus_trader/DEPLOYMENT_GUIDE.md
+    about: Learn how to backtest your changes
+
+  - name: 🤝 Contributing Guide
+    url: https://github.com/elibend220/agentcheck/blob/main/CONTRIBUTING.md
+    about: Read our contribution guidelines and best practices
+
+  - name: 💬 Discussions
+    url: https://github.com/elibend220/agentcheck/discussions
+    about: Ask questions or discuss ideas
