@@ -1,4 +1,4 @@
-"""Agent Coordinator for full Phase 1-4 pipeline."""
+"""Agent Coordinator for full Phase 1-5 pipeline."""
 from __future__ import annotations
 
 from typing import Callable
@@ -13,6 +13,7 @@ from agents.phase3c_creativity import make_creativity_node
 from agents.phase4a_tool_selection import make_tool_selection_node
 from agents.phase4b_tool_execution import make_tool_execution_node
 from agents.phase4c_tool_verification import make_tool_verification_node
+from agents.phase5_quantum import make_quantum_optimization_node, make_phase5_summary_node
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
 
@@ -21,7 +22,7 @@ LLMFn = Callable[[str], str]
 
 class AgentCoordinator:
     """
-    Orchestrates all 4 phases:
+    Orchestrates all 5 phases:
 
     Phase 1: NLP (intent, entities)
     Phase 2: Knowledge (semantic retrieval)
@@ -31,6 +32,8 @@ class AgentCoordinator:
     Phase 4a: Tool Selection (choose tools)
     Phase 4b: Tool Execution (execute safely)
     Phase 4c: Tool Verification (validate results)
+    Phase 5a: Quantum Optimization (superposition, entanglement, tunneling, amplification, annealing)
+    Phase 5b: Quantum Summary (report quantum metrics)
     """
 
     def __init__(
@@ -39,12 +42,14 @@ class AgentCoordinator:
         tool_registry: ToolRegistry = None,
         safety_validator: SafetyValidator = None,
         enable_phase4: bool = True,
+        enable_phase5: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
         self.registry = tool_registry
         self.safety_validator = safety_validator or SafetyValidator()
         self.enable_phase4 = enable_phase4 and (tool_registry is not None)
+        self.enable_phase5 = enable_phase5 and self.enable_phase4
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -75,6 +80,17 @@ class AgentCoordinator:
                 make_tool_verification_node(self.llm),
             )
 
+        # Phase 5 (conditional on Phase 4)
+        if self.enable_phase5:
+            graph.add_node(
+                "phase5a_quantum_optimization",
+                make_quantum_optimization_node(self.llm, self.registry),
+            )
+            graph.add_node(
+                "phase5b_quantum_summary",
+                make_phase5_summary_node(self.llm),
+            )
+
         # Edges: sequential pipeline
         graph.set_entry_point("phase1_nlp")
         graph.add_edge("phase1_nlp", "phase2_knowledge")
@@ -86,7 +102,13 @@ class AgentCoordinator:
             graph.add_edge("phase3c_creativity", "phase4a_tool_selection")
             graph.add_edge("phase4a_tool_selection", "phase4b_tool_execution")
             graph.add_edge("phase4b_tool_execution", "phase4c_tool_verification")
-            graph.add_edge("phase4c_tool_verification", END)
+
+            if self.enable_phase5:
+                graph.add_edge("phase4c_tool_verification", "phase5a_quantum_optimization")
+                graph.add_edge("phase5a_quantum_optimization", "phase5b_quantum_summary")
+                graph.add_edge("phase5b_quantum_summary", END)
+            else:
+                graph.add_edge("phase4c_tool_verification", END)
         else:
             graph.add_edge("phase3c_creativity", END)
 
