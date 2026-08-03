@@ -92,6 +92,12 @@ from agents.phase18_safety_mutation import (
     make_rollback_manager_node,
     make_integrity_checker_node,
 )
+from agents.phase19_personality import (
+    make_personality_framework_node,
+    make_conversational_generation_node,
+    make_personal_relationship_model_node,
+    make_character_expression_summary_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -166,6 +172,7 @@ class AgentCoordinator:
         enable_phase16: bool = True,
         enable_phase17: bool = True,
         enable_phase18: bool = True,
+        enable_phase19: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -188,6 +195,7 @@ class AgentCoordinator:
         self.enable_phase16 = enable_phase16
         self.enable_phase17 = enable_phase17
         self.enable_phase18 = enable_phase18
+        self.enable_phase19 = enable_phase19
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -481,6 +489,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase18d_integrity_checker",
                 make_integrity_checker_node(self.llm),
+            )
+
+        # Phase 19 nodes (if enabled)
+        if self.enable_phase19:
+            graph.add_node(
+                "phase19a_personality_framework",
+                make_personality_framework_node(self.llm),
+            )
+            graph.add_node(
+                "phase19b_conversational_generation",
+                make_conversational_generation_node(self.llm),
+            )
+            graph.add_node(
+                "phase19c_personal_relationship_model",
+                make_personal_relationship_model_node(self.llm),
+            )
+            graph.add_node(
+                "phase19d_character_expression_summary",
+                make_character_expression_summary_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -827,7 +854,18 @@ class AgentCoordinator:
             graph.add_edge("phase18a_mutation_analysis", "phase18b_safety_validator")
             graph.add_edge("phase18b_safety_validator", "phase18c_rollback_manager")
             graph.add_edge("phase18c_rollback_manager", "phase18d_integrity_checker")
-            graph.add_edge("phase18d_integrity_checker", END)
+
+            if self.enable_phase19:
+                graph.add_edge("phase18d_integrity_checker", "phase19a_personality_framework")
+            else:
+                graph.add_edge("phase18d_integrity_checker", END)
+
+        # Phase 19 edges (if enabled)
+        if self.enable_phase19:
+            graph.add_edge("phase19a_personality_framework", "phase19b_conversational_generation")
+            graph.add_edge("phase19b_conversational_generation", "phase19c_personal_relationship_model")
+            graph.add_edge("phase19c_personal_relationship_model", "phase19d_character_expression_summary")
+            graph.add_edge("phase19d_character_expression_summary", END)
 
         return graph.compile()
 

@@ -396,6 +396,27 @@ class FullAgentState(TypedDict, total=False):
     system_integrity_confidence: float
     phase18_summary: str
 
+    # === Phase 19: Personality & Conversational Charm ===
+    personality_traits: list[str]
+    character_voice: str
+    humor_level: float
+    formality_level: float
+    charm_score: float
+    personality_confidence: float
+    conversational_response: str
+    response_wit_level: float
+    response_charm_applied: float
+    natural_dialogue_confidence: float
+    user_quirks: list[str]
+    user_preferences_learned: dict[str, Any]
+    relationship_depth: float
+    personalization_level: float
+    relationship_confidence: float
+    personality_established: bool
+    character_ready: bool
+    conversational_charm_active: bool
+    phase19_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool
