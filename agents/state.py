@@ -336,6 +336,29 @@ class FullAgentState(TypedDict, total=False):
     voice_interface_ready: bool
     phase21_summary: str
 
+    # === Phase 16: System Engineering & Self-Optimization ===
+    phase_latencies: dict[str, float]
+    phase_success_rates: dict[str, float]
+    node_execution_counts: dict[str, int]
+    resource_usage: dict[str, Any]
+    bottleneck_phases: list[str]
+    metrics_collection_confidence: float
+    critical_phases: list[str]
+    low_impact_phases: list[str]
+    phase_coupling_analysis: dict[str, Any]
+    optimization_opportunities: list[str]
+    architecture_analysis_confidence: float
+    recommended_phase_changes: list[str]
+    recommended_routing_changes: list[str]
+    recommended_resource_allocation: dict[str, Any]
+    optimization_priority: list[str]
+    optimization_recommendation_confidence: float
+    applied_optimizations: list[str]
+    optimization_applied: bool
+    system_optimized: bool
+    optimization_applied_confidence: float
+    phase16_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

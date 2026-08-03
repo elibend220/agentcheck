@@ -74,6 +74,12 @@ from agents.phase21_voice_conversation import (
     make_tts_generation_node,
     make_voice_interface_summary_node,
 )
+from agents.phase16_system_engineering import (
+    make_metrics_collection_node,
+    make_architecture_analysis_node,
+    make_optimization_recommendation_node,
+    make_adaptive_configurator_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -145,6 +151,7 @@ class AgentCoordinator:
         enable_phase14: bool = True,
         enable_phase15: bool = True,
         enable_phase21: bool = True,
+        enable_phase16: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -164,6 +171,7 @@ class AgentCoordinator:
         self.enable_phase14 = enable_phase14
         self.enable_phase15 = enable_phase15
         self.enable_phase21 = enable_phase21
+        self.enable_phase16 = enable_phase16
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -400,6 +408,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase21d_voice_summary",
                 make_voice_interface_summary_node(self.llm),
+            )
+
+        # Phase 16 (always included if enabled)
+        if self.enable_phase16:
+            graph.add_node(
+                "phase16a_metrics_collection",
+                make_metrics_collection_node(self.llm),
+            )
+            graph.add_node(
+                "phase16b_architecture_analysis",
+                make_architecture_analysis_node(self.llm),
+            )
+            graph.add_node(
+                "phase16c_optimization_recommendation",
+                make_optimization_recommendation_node(self.llm),
+            )
+            graph.add_node(
+                "phase16d_adaptive_configurator",
+                make_adaptive_configurator_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -697,7 +724,34 @@ class AgentCoordinator:
             graph.add_edge("phase21a_voice_processing", "phase21b_conversation_flow")
             graph.add_edge("phase21b_conversation_flow", "phase21c_tts_generation")
             graph.add_edge("phase21c_tts_generation", "phase21d_voice_summary")
-            graph.add_edge("phase21d_voice_summary", END)
+
+            if self.enable_phase16:
+                graph.add_edge("phase21d_voice_summary", "phase16a_metrics_collection")
+            else:
+                graph.add_edge("phase21d_voice_summary", END)
+        else:
+            # If Phase 21 disabled, route from Phase 15 to Phase 16
+            if self.enable_phase15:
+                if self.enable_phase16:
+                    graph.add_edge("phase15d_emotional_summary", "phase16a_metrics_collection")
+                else:
+                    # Already set in Phase 15 edges
+                    pass
+            else:
+                # If Phase 15 disabled, route from Phase 14 to Phase 16
+                if self.enable_phase14:
+                    if self.enable_phase16:
+                        graph.add_edge("phase14d_streaming_summary", "phase16a_metrics_collection")
+                    else:
+                        # Already set in Phase 14 edges
+                        pass
+
+        # Phase 16 edges (if enabled)
+        if self.enable_phase16:
+            graph.add_edge("phase16a_metrics_collection", "phase16b_architecture_analysis")
+            graph.add_edge("phase16b_architecture_analysis", "phase16c_optimization_recommendation")
+            graph.add_edge("phase16c_optimization_recommendation", "phase16d_adaptive_configurator")
+            graph.add_edge("phase16d_adaptive_configurator", END)
 
         return graph.compile()
 
