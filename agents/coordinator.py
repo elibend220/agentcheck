@@ -104,6 +104,12 @@ from agents.phase20_risk_assessment import (
     make_intelligent_refusal_node,
     make_safety_negotiation_node,
 )
+from agents.phase22_system_integration import (
+    make_device_discovery_node,
+    make_smart_home_control_node,
+    make_iot_integration_node,
+    make_physical_integration_summary_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -180,6 +186,7 @@ class AgentCoordinator:
         enable_phase18: bool = True,
         enable_phase19: bool = True,
         enable_phase20: bool = True,
+        enable_phase22: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -204,6 +211,7 @@ class AgentCoordinator:
         self.enable_phase18 = enable_phase18
         self.enable_phase19 = enable_phase19
         self.enable_phase20 = enable_phase20
+        self.enable_phase22 = enable_phase22
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -535,6 +543,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase20d_safety_negotiation",
                 make_safety_negotiation_node(self.llm),
+            )
+
+        # Phase 22 nodes (if enabled)
+        if self.enable_phase22:
+            graph.add_node(
+                "phase22a_device_discovery",
+                make_device_discovery_node(self.llm),
+            )
+            graph.add_node(
+                "phase22b_smart_home_control",
+                make_smart_home_control_node(self.llm),
+            )
+            graph.add_node(
+                "phase22c_iot_integration",
+                make_iot_integration_node(self.llm),
+            )
+            graph.add_node(
+                "phase22d_physical_integration_summary",
+                make_physical_integration_summary_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -903,7 +930,18 @@ class AgentCoordinator:
             graph.add_edge("phase20a_consequence_prediction", "phase20b_risk_communication")
             graph.add_edge("phase20b_risk_communication", "phase20c_intelligent_refusal")
             graph.add_edge("phase20c_intelligent_refusal", "phase20d_safety_negotiation")
-            graph.add_edge("phase20d_safety_negotiation", END)
+
+            if self.enable_phase22:
+                graph.add_edge("phase20d_safety_negotiation", "phase22a_device_discovery")
+            else:
+                graph.add_edge("phase20d_safety_negotiation", END)
+
+        # Phase 22 edges (if enabled)
+        if self.enable_phase22:
+            graph.add_edge("phase22a_device_discovery", "phase22b_smart_home_control")
+            graph.add_edge("phase22b_smart_home_control", "phase22c_iot_integration")
+            graph.add_edge("phase22c_iot_integration", "phase22d_physical_integration_summary")
+            graph.add_edge("phase22d_physical_integration_summary", END)
 
         return graph.compile()
 

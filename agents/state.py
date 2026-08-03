@@ -443,6 +443,29 @@ class FullAgentState(TypedDict, total=False):
     negotiation_confidence: float
     phase20_summary: str
 
+    # === Phase 22: System Integration & Physical Control ===
+    discovered_devices: list[str]
+    device_capabilities: dict[str, Any]
+    device_registry: dict[str, Any]
+    integration_readiness: float
+    discovery_confidence: float
+    environmental_controls: list[str]
+    active_automations: list[str]
+    comfort_level: float
+    suggested_adjustments: list[str]
+    smart_home_confidence: float
+    connected_wearables: list[str]
+    sensor_streams: list[str]
+    health_metrics: dict[str, Any]
+    activity_tracking: list[str]
+    iot_awareness_level: float
+    iot_integration_confidence: float
+    physical_integration_ready: bool
+    environmental_control_active: bool
+    iot_integration_complete: bool
+    phase22_summary: str
+    environment_name: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool
