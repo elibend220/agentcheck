@@ -6,7 +6,29 @@ A modern, extensible AGI framework built on principles of modular agents, unifie
 
 ## 🚀 Quick Start
 
-### Mobile + Backend (Recommended)
+### 🌐 GitHub Codespace (Easiest - Zero Setup!)
+
+Click to launch fully configured development environment in browser:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?repo=elibend220/agentcheck)
+
+Or:
+```
+GitHub → Code → Codespaces → Create codespace on main
+```
+
+**Then build APK in 3 commands:**
+```bash
+cd mobile
+eas login
+eas build --platform android
+```
+
+See [🌐 CODESPACE_GUIDE.md](CODESPACE_GUIDE.md) for full Codespace guide.
+
+---
+
+### Mobile + Backend (Local Development)
 
 **Deploy the complete system with web and mobile apps:**
 
@@ -28,7 +50,8 @@ adb install app-production.apk
 ```
 
 📱 **Full Guides:**
-- [⚡ QUICK_EAS_BUILD.md](mobile/QUICK_EAS_BUILD.md) - **FASTEST** - Build APK in the cloud (5 min)
+- [🌐 CODESPACE_GUIDE.md](CODESPACE_GUIDE.md) - **BUILD IN BROWSER** - No local setup needed!
+- [⚡ QUICK_EAS_BUILD.md](mobile/QUICK_EAS_BUILD.md) - Build APK in the cloud (5 min)
 - [☁️ EAS_BUILD_GUIDE.md](EAS_BUILD_GUIDE.md) - Complete EAS Build guide
 - [📖 BUILD_APK_GUIDE.md](BUILD_APK_GUIDE.md) - Local APK building (requires Android SDK)
 - [📱 MOBILE_SETUP.md](MOBILE_SETUP.md) - Complete mobile app setup
