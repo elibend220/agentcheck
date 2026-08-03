@@ -2,7 +2,23 @@
 
 React Native mobile application for iOS and Android that connects to the JARVIS AGI backend server.
 
-## 🚀 Quick Start
+## ⚡ Build APK Instantly (Recommended)
+
+Use **EAS Build** to build your APK in the cloud with no local setup:
+
+1. **Create free Expo account** → https://expo.dev
+2. **Login:** `eas login`
+3. **Build:** `eas build --platform android`
+4. **Download** when ready (~5-10 minutes)
+5. **Install:** `adb install app.apk`
+
+📖 **See [QUICK_EAS_BUILD.md](QUICK_EAS_BUILD.md)** for step-by-step instructions in Hebrew
+
+Or check [EAS_BUILD_GUIDE.md](../EAS_BUILD_GUIDE.md) for detailed guide.
+
+---
+
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 

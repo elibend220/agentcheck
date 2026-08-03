@@ -18,16 +18,19 @@ python server.py
 # Server runs on http://localhost:8000
 ```
 
-2. **Build Android APK**:
+2. **Build Android APK (Cloud - Easiest)**:
 ```bash
 cd mobile
-chmod +x build-apk.sh
-./build-apk.sh  # macOS/Linux
-# or build-apk.bat for Windows
+eas login          # One-time setup with Expo account
+eas build --platform android
+# Download APK when ready (~5-10 minutes)
+adb install app-production.apk
 ```
 
 📱 **Full Guides:**
-- [📖 BUILD_APK_GUIDE.md](BUILD_APK_GUIDE.md) - Detailed APK building instructions
+- [⚡ QUICK_EAS_BUILD.md](mobile/QUICK_EAS_BUILD.md) - **FASTEST** - Build APK in the cloud (5 min)
+- [☁️ EAS_BUILD_GUIDE.md](EAS_BUILD_GUIDE.md) - Complete EAS Build guide
+- [📖 BUILD_APK_GUIDE.md](BUILD_APK_GUIDE.md) - Local APK building (requires Android SDK)
 - [📱 MOBILE_SETUP.md](MOBILE_SETUP.md) - Complete mobile app setup
 - [🌐 WEB_SETUP.md](WEB_SETUP.md) - Web frontend deployment
 - [🔧 BACKEND_QUICKSTART.md](BACKEND_QUICKSTART.md) - Backend configuration
