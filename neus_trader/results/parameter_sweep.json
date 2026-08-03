@@ -1,0 +1,52 @@
+{
+  "timestamp": "2026-08-03T18:31:43.471298",
+  "optimization": "Parameter Sweep",
+  "configurations": [
+    {
+      "name": "BASELINE",
+      "description": "Current default parameters",
+      "trades": 370,
+      "win_rate": 0.3054054054054054,
+      "pnl": -5.10958543714144,
+      "profit_factor": 0.9176276580957858,
+      "drawdown": -0.0010358804985747217,
+      "sharpe": -0.12330604977872739
+    },
+    {
+      "name": "CONSERVATIVE",
+      "description": "Reduced position size (0.5% risk)",
+      "trades": 370,
+      "win_rate": 0.3054054054054054,
+      "pnl": -5.10958543714144,
+      "profit_factor": 0.9176276580957858,
+      "drawdown": -0.0010358804985747217,
+      "sharpe": -0.12330604977872739
+    },
+    {
+      "name": "AGGRESSIVE",
+      "description": "Larger position size (2% risk)",
+      "trades": 370,
+      "win_rate": 0.3054054054054054,
+      "pnl": -5.10958543714144,
+      "profit_factor": 0.9176276580957858,
+      "drawdown": -0.0010358804985747217,
+      "sharpe": -0.12330604977872739
+    },
+    {
+      "name": "PRIME HOURS",
+      "description": "Trade only high-liquidity hours",
+      "trades": 95,
+      "win_rate": 0.28421052631578947,
+      "pnl": -0.7463727835340308,
+      "profit_factor": 0.9605958998067647,
+      "drawdown": -0.0005810171115324283,
+      "sharpe": -0.04066281108964434
+    }
+  ],
+  "best_config": {
+    "name": "PRIME HOURS",
+    "profit_factor": 0.9605958998067647,
+    "trades": 95,
+    "win_rate": 0.28421052631578947
+  }
+}
