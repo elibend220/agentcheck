@@ -1,0 +1,156 @@
+.messageList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 0;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: #888;
+}
+
+.emptyIcon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.emptyState h2 {
+  font-size: 1.4rem;
+  color: #00d4ff;
+  margin-bottom: 8px;
+}
+
+.emptyState p {
+  color: #888;
+  max-width: 300px;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 8px;
+  animation: messageSlideIn 0.3s ease;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.messageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.messageBubble {
+  padding: 12px 16px;
+  border-radius: 12px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  max-width: 70%;
+  font-size: 0.95rem;
+}
+
+.timestamp {
+  font-size: 0.75rem;
+  color: #666;
+  padding: 0 4px;
+}
+
+/* User messages */
+.user {
+  justify-content: flex-end;
+}
+
+.user .messageBubble {
+  background-color: #00d4ff;
+  color: #1a1a2e;
+  border-bottom-right-radius: 4px;
+  font-weight: 500;
+}
+
+/* Assistant messages */
+.assistant {
+  justify-content: flex-start;
+}
+
+.assistant .messageBubble {
+  background-color: #0f3460;
+  color: #fff;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-bottom-left-radius: 4px;
+}
+
+/* System messages */
+.system {
+  justify-content: center;
+}
+
+.system .messageBubble {
+  background-color: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  max-width: 100%;
+}
+
+/* Loading animation */
+.loadingDots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.loadingDots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #00d4ff;
+  animation: dot 1.4s infinite;
+}
+
+.loadingDots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loadingDots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot {
+  0%, 60%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-8px);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .messageBubble {
+    max-width: 85%;
+  }
+
+  .emptyIcon {
+    font-size: 3rem;
+  }
+
+  .emptyState h2 {
+    font-size: 1.1rem;
+  }
+}

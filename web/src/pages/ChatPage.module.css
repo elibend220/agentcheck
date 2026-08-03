@@ -1,0 +1,91 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background-color: #16213e;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.headerContent {
+  flex: 1;
+}
+
+.headerContent h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.8rem;
+  color: #00d4ff;
+}
+
+.headerContent p {
+  margin: 0;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.sessionBadge {
+  background-color: rgba(0, 212, 255, 0.1);
+  border: 1px solid #00d4ff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #00d4ff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sessionBadge code {
+  font-family: 'Courier New', monospace;
+  background-color: rgba(0, 212, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.chatArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #16213e;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  padding: 20px;
+  overflow-y: auto;
+  gap: 16px;
+  min-height: 300px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .headerContent h1 {
+    font-size: 1.4rem;
+  }
+
+  .sessionBadge {
+    width: 100%;
+    text-align: center;
+  }
+}

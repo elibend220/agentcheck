@@ -1,0 +1,292 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 20px;
+}
+
+.header h1 {
+  margin: 0 0 4px 0;
+  font-size: 1.8rem;
+  color: #00d4ff;
+}
+
+.header p {
+  margin: 0;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.successAlert {
+  background-color: rgba(0, 255, 0, 0.1);
+  border: 1px solid #00ff00;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #00ff00;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.errorAlert {
+  background-color: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #ff6b6b;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.settingsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.settingSection {
+  background-color: #16213e;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  border-left: 4px solid #00d4ff;
+}
+
+.settingSection h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.2rem;
+  color: #00d4ff;
+}
+
+.settingItem {
+  margin-bottom: 16px;
+}
+
+.settingItem label {
+  display: block;
+  color: #ddd;
+  font-weight: 600;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.input {
+  width: 100%;
+  background-color: #0f3460;
+  color: #fff;
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #00d4ff;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+}
+
+.helpText {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+
+.urlPresets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.preset {
+  background-color: rgba(0, 212, 255, 0.1);
+  border: 1px solid #00d4ff;
+  color: #00d4ff;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset:hover {
+  background-color: #00d4ff;
+  color: #1a1a2e;
+}
+
+.urlGuide {
+  background-color: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.urlGuide h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #00d4ff;
+}
+
+.urlGuide ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #aaa;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.urlGuide li {
+  margin-bottom: 4px;
+}
+
+.urlGuide strong {
+  color: #00d4ff;
+}
+
+.aboutItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.05);
+  gap: 12px;
+}
+
+.aboutItem:last-child {
+  border-bottom: none;
+}
+
+.aboutLabel {
+  color: #00d4ff;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.aboutValue {
+  color: #aaa;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.shortcutList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background-color: rgba(0, 212, 255, 0.05);
+  border-radius: 6px;
+}
+
+.shortcut kbd {
+  background-color: #0f3460;
+  border: 1px solid #00d4ff;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #00d4ff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 60px;
+  text-align: center;
+}
+
+.shortcut span {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.saveBtn {
+  background-color: #00d4ff;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.saveBtn:hover {
+  background-color: #00ffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
+}
+
+.resetBtn {
+  background-color: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.resetBtn:hover {
+  background-color: #ff6b6b;
+  color: #1a1a2e;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .saveBtn, .resetBtn {
+    width: 100%;
+  }
+
+  .aboutItem {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .aboutValue {
+    text-align: left;
+  }
+}
