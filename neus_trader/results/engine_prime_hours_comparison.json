@@ -1,28 +1,28 @@
 {
-  "timestamp": "2026-08-03T19:46:55.720589",
+  "timestamp": "2026-08-03T20:13:55.010611",
   "comparison": "Improved Engine: All Hours vs Prime Hours",
   "all_hours": {
-    "trades": 104,
-    "win_rate": 0.3076923076923077,
-    "pnl": -0.23102256422677608,
-    "pnl_pct": -2.310225642267761e-05,
-    "profit_factor": 0.9859795989839197,
-    "drawdown": -0.000387271900700811,
-    "sharpe": -0.010464403245352197
+    "trades": 103,
+    "win_rate": 0.3300970873786408,
+    "pnl": 1.770356166244172,
+    "pnl_pct": 0.0001770356166244172,
+    "profit_factor": 1.1136447369526918,
+    "drawdown": -0.00030220297784075347,
+    "sharpe": 0.08027289271805196
   },
   "prime_hours": {
-    "trades": 57,
-    "win_rate": 0.3333333333333333,
-    "pnl": 3.0852353825784693,
-    "pnl_pct": 0.00030852353825784693,
-    "profit_factor": 1.2839056639391049,
-    "drawdown": -0.00031430111746740295,
-    "sharpe": 0.1960768420636332
+    "trades": 54,
+    "win_rate": 0.2222222222222222,
+    "pnl": 6.973365228853798,
+    "pnl_pct": 0.0006973365228853799,
+    "profit_factor": 1.7883321112044201,
+    "drawdown": -0.00029217242651429843,
+    "sharpe": 0.2890897894625548
   },
   "improvements": {
-    "trade_reduction_pct": -45.19230769230769,
-    "win_rate_change_pct": 2.5641025641025603,
-    "profit_factor_change": 0.29792606495518514,
-    "pnl_change": 3.3162579468052455
+    "trade_reduction_pct": -47.57281553398058,
+    "win_rate_change_pct": -10.78748651564186,
+    "profit_factor_change": 0.6746873742517283,
+    "pnl_change": 5.203009062609627
   }
 }
