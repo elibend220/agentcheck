@@ -191,6 +191,22 @@ class FullAgentState(TypedDict, total=False):
     phase7_recommended_approach: str
     phase7_summary: str
 
+    # === Phase 8: Error Recovery & Intelligent Retry ===
+    recovery_needed: bool
+    recovery_strategy: str  # "alternative_tools", "adjust_parameters", "enhance_reasoning", etc.
+    error_details: dict[str, Any]
+    retry_attempted: bool
+    retry_plan: dict[str, Any]
+    historical_alternatives: dict[str, Any]
+    retry_reasoning: str
+    recovery_executed: bool
+    retry_result: dict[str, Any]
+    retry_success: bool
+    retry_outcome: str  # "success", "partial", "failure"
+    recovery_confidence: float
+    recovery_attempt_count: int
+    phase8_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

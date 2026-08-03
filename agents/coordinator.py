@@ -20,6 +20,12 @@ from agents.phase7_memory import (
     make_memory_retrieval_node,
     make_phase7_summary_node,
 )
+from agents.phase8_error_recovery import (
+    make_error_detection_node,
+    make_retry_orchestration_node,
+    make_recovery_execution_node,
+    make_recovery_summary_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -29,7 +35,7 @@ LLMFn = Callable[[str], str]
 
 class AgentCoordinator:
     """
-    Orchestrates all 7 phases:
+    Orchestrates all 8 phases:
 
     Phase 1: NLP (intent, entities)
     Phase 2: Knowledge (semantic retrieval)
@@ -46,6 +52,10 @@ class AgentCoordinator:
     Phase 7a: Memory Persistence (save to persistent memory)
     Phase 7b: Memory Retrieval (retrieve and synthesize historical knowledge)
     Phase 7c: Memory Summary (report memory insights)
+    Phase 8a: Error Detection (identify failures)
+    Phase 8b: Retry Orchestration (plan recovery)
+    Phase 8c: Recovery Execution (execute recovery)
+    Phase 8d: Recovery Summary (report recovery results)
     """
 
     def __init__(
@@ -58,6 +68,7 @@ class AgentCoordinator:
         enable_phase5: bool = True,
         enable_phase6: bool = True,
         enable_phase7: bool = True,
+        enable_phase8: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -68,6 +79,7 @@ class AgentCoordinator:
         self.enable_phase5 = enable_phase5 and self.enable_phase4
         self.enable_phase6 = enable_phase6
         self.enable_phase7 = enable_phase7
+        self.enable_phase8 = enable_phase8
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -135,6 +147,25 @@ class AgentCoordinator:
                 make_phase7_summary_node(self.llm),
             )
 
+        # Phase 8 (always included if enabled)
+        if self.enable_phase8:
+            graph.add_node(
+                "phase8a_error_detection",
+                make_error_detection_node(self.llm),
+            )
+            graph.add_node(
+                "phase8b_retry_orchestration",
+                make_retry_orchestration_node(self.llm, self.memory_manager),
+            )
+            graph.add_node(
+                "phase8c_recovery_execution",
+                make_recovery_execution_node(self.llm),
+            )
+            graph.add_node(
+                "phase8d_recovery_summary",
+                make_recovery_summary_node(self.llm),
+            )
+
         # Edges: sequential pipeline
         graph.set_entry_point("phase1_nlp")
         graph.add_edge("phase1_nlp", "phase2_knowledge")
@@ -159,17 +190,31 @@ class AgentCoordinator:
                         graph.add_edge("phase6b_learning_summary", "phase7a_memory_persistence")
                         graph.add_edge("phase7a_memory_persistence", "phase7b_memory_retrieval")
                         graph.add_edge("phase7b_memory_retrieval", "phase7c_memory_summary")
-                        graph.add_edge("phase7c_memory_summary", END)
+
+                        if self.enable_phase8:
+                            graph.add_edge("phase7c_memory_summary", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase7c_memory_summary", END)
                     else:
-                        graph.add_edge("phase6b_learning_summary", END)
+                        if self.enable_phase8:
+                            graph.add_edge("phase6b_learning_summary", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase6b_learning_summary", END)
                 else:
                     if self.enable_phase7:
                         graph.add_edge("phase5b_quantum_summary", "phase7a_memory_persistence")
                         graph.add_edge("phase7a_memory_persistence", "phase7b_memory_retrieval")
                         graph.add_edge("phase7b_memory_retrieval", "phase7c_memory_summary")
-                        graph.add_edge("phase7c_memory_summary", END)
+
+                        if self.enable_phase8:
+                            graph.add_edge("phase7c_memory_summary", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase7c_memory_summary", END)
                     else:
-                        graph.add_edge("phase5b_quantum_summary", END)
+                        if self.enable_phase8:
+                            graph.add_edge("phase5b_quantum_summary", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase5b_quantum_summary", END)
             else:
                 if self.enable_phase6:
                     graph.add_edge("phase4c_tool_verification", "phase6a_learning_feedback")
@@ -179,17 +224,31 @@ class AgentCoordinator:
                         graph.add_edge("phase6b_learning_summary", "phase7a_memory_persistence")
                         graph.add_edge("phase7a_memory_persistence", "phase7b_memory_retrieval")
                         graph.add_edge("phase7b_memory_retrieval", "phase7c_memory_summary")
-                        graph.add_edge("phase7c_memory_summary", END)
+
+                        if self.enable_phase8:
+                            graph.add_edge("phase7c_memory_summary", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase7c_memory_summary", END)
                     else:
-                        graph.add_edge("phase6b_learning_summary", END)
+                        if self.enable_phase8:
+                            graph.add_edge("phase6b_learning_summary", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase6b_learning_summary", END)
                 else:
                     if self.enable_phase7:
                         graph.add_edge("phase4c_tool_verification", "phase7a_memory_persistence")
                         graph.add_edge("phase7a_memory_persistence", "phase7b_memory_retrieval")
                         graph.add_edge("phase7b_memory_retrieval", "phase7c_memory_summary")
-                        graph.add_edge("phase7c_memory_summary", END)
+
+                        if self.enable_phase8:
+                            graph.add_edge("phase7c_memory_summary", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase7c_memory_summary", END)
                     else:
-                        graph.add_edge("phase4c_tool_verification", END)
+                        if self.enable_phase8:
+                            graph.add_edge("phase4c_tool_verification", "phase8a_error_detection")
+                        else:
+                            graph.add_edge("phase4c_tool_verification", END)
         else:
             if self.enable_phase6:
                 graph.add_edge("phase3c_creativity", "phase6a_learning_feedback")
@@ -199,17 +258,38 @@ class AgentCoordinator:
                     graph.add_edge("phase6b_learning_summary", "phase7a_memory_persistence")
                     graph.add_edge("phase7a_memory_persistence", "phase7b_memory_retrieval")
                     graph.add_edge("phase7b_memory_retrieval", "phase7c_memory_summary")
-                    graph.add_edge("phase7c_memory_summary", END)
+
+                    if self.enable_phase8:
+                        graph.add_edge("phase7c_memory_summary", "phase8a_error_detection")
+                    else:
+                        graph.add_edge("phase7c_memory_summary", END)
                 else:
-                    graph.add_edge("phase6b_learning_summary", END)
+                    if self.enable_phase8:
+                        graph.add_edge("phase6b_learning_summary", "phase8a_error_detection")
+                    else:
+                        graph.add_edge("phase6b_learning_summary", END)
             else:
                 if self.enable_phase7:
                     graph.add_edge("phase3c_creativity", "phase7a_memory_persistence")
                     graph.add_edge("phase7a_memory_persistence", "phase7b_memory_retrieval")
                     graph.add_edge("phase7b_memory_retrieval", "phase7c_memory_summary")
-                    graph.add_edge("phase7c_memory_summary", END)
+
+                    if self.enable_phase8:
+                        graph.add_edge("phase7c_memory_summary", "phase8a_error_detection")
+                    else:
+                        graph.add_edge("phase7c_memory_summary", END)
                 else:
-                    graph.add_edge("phase3c_creativity", END)
+                    if self.enable_phase8:
+                        graph.add_edge("phase3c_creativity", "phase8a_error_detection")
+                    else:
+                        graph.add_edge("phase3c_creativity", END)
+
+        # Phase 8 edges (if enabled)
+        if self.enable_phase8:
+            graph.add_edge("phase8a_error_detection", "phase8b_retry_orchestration")
+            graph.add_edge("phase8b_retry_orchestration", "phase8c_recovery_execution")
+            graph.add_edge("phase8c_recovery_execution", "phase8d_recovery_summary")
+            graph.add_edge("phase8d_recovery_summary", END)
 
         return graph.compile()
 
