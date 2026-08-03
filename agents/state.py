@@ -283,6 +283,59 @@ class FullAgentState(TypedDict, total=False):
     plugin_system_ready: bool
     phase13_summary: str
 
+    # === Phase 14: Real-Time Event Streaming & Continuous Monitoring ===
+    event_streams: list[str]
+    monitored_sources: list[str]
+    listener_status: str
+    listener_ready: bool
+    streaming_confidence: float
+    processed_events: list[str]
+    event_queue: list[str]
+    triggered_actions: list[str]
+    event_processing_confidence: float
+    realtime_responses: list[str]
+    response_latency_ms: int
+    response_queue: list[str]
+    response_confidence: float
+    realtime_streaming_ready: bool
+    phase14_summary: str
+
+    # === Phase 15: Emotional Intelligence & Sentiment Analysis ===
+    user_sentiment: str
+    sentiment_score: float
+    emotional_tone: list[str]
+    sentiment_confidence: float
+    detected_emotions: list[str]
+    emotion_intensities: dict[str, float]
+    emotional_state: str
+    emotion_detection_confidence: float
+    empathetic_response: str
+    response_tone_adjustment: str
+    emotional_support_level: float
+    empathy_confidence: float
+    emotional_intelligence_ready: bool
+    phase15_summary: str
+
+    # === Phase 21: Voice & Natural Conversation Interface ===
+    speech_detected: bool
+    transcribed_text: str
+    speech_confidence: float
+    speech_tone: str
+    voice_characteristics: dict[str, Any]
+    conversation_context: dict[str, Any]
+    conversation_flow: list[str]
+    natural_pauses: list[str]
+    interruption_points: list[str]
+    conversation_confidence: float
+    spoken_response: str
+    speech_rate: int
+    prosody_markers: list[str]
+    emphasis_points: list[str]
+    tts_ready: bool
+    tts_confidence: float
+    voice_interface_ready: bool
+    phase21_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

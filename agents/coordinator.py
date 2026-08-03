@@ -56,6 +56,24 @@ from agents.phase13_dynamic_plugins import (
     make_plugin_installer_node,
     make_integration_manager_node,
 )
+from agents.phase14_realtime_streaming import (
+    make_event_listener_node,
+    make_event_processor_node,
+    make_response_generator_node,
+    make_streaming_summary_node,
+)
+from agents.phase15_emotional_intelligence import (
+    make_sentiment_analysis_node,
+    make_emotion_detection_node,
+    make_empathy_response_node,
+    make_emotional_intelligence_summary_node,
+)
+from agents.phase21_voice_conversation import (
+    make_voice_processing_node,
+    make_conversation_flow_node,
+    make_tts_generation_node,
+    make_voice_interface_summary_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -124,6 +142,9 @@ class AgentCoordinator:
         enable_phase11: bool = True,
         enable_phase12: bool = True,
         enable_phase13: bool = True,
+        enable_phase14: bool = True,
+        enable_phase15: bool = True,
+        enable_phase21: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -140,6 +161,9 @@ class AgentCoordinator:
         self.enable_phase11 = enable_phase11
         self.enable_phase12 = enable_phase12
         self.enable_phase13 = enable_phase13
+        self.enable_phase14 = enable_phase14
+        self.enable_phase15 = enable_phase15
+        self.enable_phase21 = enable_phase21
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -319,6 +343,63 @@ class AgentCoordinator:
             graph.add_node(
                 "phase13d_integration_manager",
                 make_integration_manager_node(self.llm),
+            )
+
+        # Phase 14 (always included if enabled)
+        if self.enable_phase14:
+            graph.add_node(
+                "phase14a_event_listener",
+                make_event_listener_node(self.llm),
+            )
+            graph.add_node(
+                "phase14b_event_processor",
+                make_event_processor_node(self.llm),
+            )
+            graph.add_node(
+                "phase14c_response_generator",
+                make_response_generator_node(self.llm),
+            )
+            graph.add_node(
+                "phase14d_streaming_summary",
+                make_streaming_summary_node(self.llm),
+            )
+
+        # Phase 15 (always included if enabled)
+        if self.enable_phase15:
+            graph.add_node(
+                "phase15a_sentiment_analysis",
+                make_sentiment_analysis_node(self.llm),
+            )
+            graph.add_node(
+                "phase15b_emotion_detection",
+                make_emotion_detection_node(self.llm),
+            )
+            graph.add_node(
+                "phase15c_empathy_response",
+                make_empathy_response_node(self.llm),
+            )
+            graph.add_node(
+                "phase15d_emotional_summary",
+                make_emotional_intelligence_summary_node(self.llm),
+            )
+
+        # Phase 21 (always included if enabled)
+        if self.enable_phase21:
+            graph.add_node(
+                "phase21a_voice_processing",
+                make_voice_processing_node(self.llm),
+            )
+            graph.add_node(
+                "phase21b_conversation_flow",
+                make_conversation_flow_node(self.llm),
+            )
+            graph.add_node(
+                "phase21c_tts_generation",
+                make_tts_generation_node(self.llm),
+            )
+            graph.add_node(
+                "phase21d_voice_summary",
+                make_voice_interface_summary_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -574,7 +655,49 @@ class AgentCoordinator:
             graph.add_edge("phase13a_plugin_discovery", "phase13b_plugin_builder")
             graph.add_edge("phase13b_plugin_builder", "phase13c_plugin_installer")
             graph.add_edge("phase13c_plugin_installer", "phase13d_integration_manager")
-            graph.add_edge("phase13d_integration_manager", END)
+
+            if self.enable_phase14:
+                graph.add_edge("phase13d_integration_manager", "phase14a_event_listener")
+            else:
+                if self.enable_phase15:
+                    graph.add_edge("phase13d_integration_manager", "phase15a_sentiment_analysis")
+                else:
+                    if self.enable_phase21:
+                        graph.add_edge("phase13d_integration_manager", "phase21a_voice_processing")
+                    else:
+                        graph.add_edge("phase13d_integration_manager", END)
+
+        # Phase 14 edges (if enabled)
+        if self.enable_phase14:
+            graph.add_edge("phase14a_event_listener", "phase14b_event_processor")
+            graph.add_edge("phase14b_event_processor", "phase14c_response_generator")
+            graph.add_edge("phase14c_response_generator", "phase14d_streaming_summary")
+
+            if self.enable_phase15:
+                graph.add_edge("phase14d_streaming_summary", "phase15a_sentiment_analysis")
+            else:
+                if self.enable_phase21:
+                    graph.add_edge("phase14d_streaming_summary", "phase21a_voice_processing")
+                else:
+                    graph.add_edge("phase14d_streaming_summary", END)
+
+        # Phase 15 edges (if enabled)
+        if self.enable_phase15:
+            graph.add_edge("phase15a_sentiment_analysis", "phase15b_emotion_detection")
+            graph.add_edge("phase15b_emotion_detection", "phase15c_empathy_response")
+            graph.add_edge("phase15c_empathy_response", "phase15d_emotional_summary")
+
+            if self.enable_phase21:
+                graph.add_edge("phase15d_emotional_summary", "phase21a_voice_processing")
+            else:
+                graph.add_edge("phase15d_emotional_summary", END)
+
+        # Phase 21 edges (if enabled)
+        if self.enable_phase21:
+            graph.add_edge("phase21a_voice_processing", "phase21b_conversation_flow")
+            graph.add_edge("phase21b_conversation_flow", "phase21c_tts_generation")
+            graph.add_edge("phase21c_tts_generation", "phase21d_voice_summary")
+            graph.add_edge("phase21d_voice_summary", END)
 
         return graph.compile()
 
