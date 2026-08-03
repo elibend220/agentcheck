@@ -247,6 +247,23 @@ class FullAgentState(TypedDict, total=False):
     assistant_ready: bool
     phase11_summary: str
 
+    # === Phase 12: Multi-Channel Communication & External Tool Integration ===
+    active_channels: list[str]
+    channel_configs: dict[str, Any]
+    connection_status: dict[str, str]
+    channel_readiness: float
+    message_queue: list[dict[str, Any]]
+    routing_rules: dict[str, Any]
+    channel_contexts: dict[str, Any]
+    routing_confidence: float
+    external_tools: list[str]
+    tool_connections: dict[str, Any]
+    available_integrations: list[str]
+    tool_bridge_ready: bool
+    tool_capabilities: dict[str, Any]
+    multichannel_ready: bool
+    phase12_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

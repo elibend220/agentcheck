@@ -44,6 +44,12 @@ from agents.phase11_personal_assistant import (
     make_autonomous_action_node,
     make_personal_assistant_summary_node,
 )
+from agents.phase12_multichannel import (
+    make_channel_manager_node,
+    make_message_router_node,
+    make_tool_bridge_node,
+    make_multichannel_summary_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -53,7 +59,7 @@ LLMFn = Callable[[str], str]
 
 class AgentCoordinator:
     """
-    Orchestrates all 11 phases:
+    Orchestrates all 12 phases:
 
     Phase 1: NLP (intent, entities)
     Phase 2: Knowledge (semantic retrieval)
@@ -86,6 +92,10 @@ class AgentCoordinator:
     Phase 11b: Predictive Assistance (anticipate needs)
     Phase 11c: Autonomous Action (recommend actions)
     Phase 11d: Personal Assistant Summary (JARVIS-like response)
+    Phase 12a: Channel Manager (manage communication channels)
+    Phase 12b: Message Router (route messages across channels)
+    Phase 12c: Tool Bridge (integrate external tools)
+    Phase 12d: Multi-Channel Summary (platform-specific formatting)
     """
 
     def __init__(
@@ -102,6 +112,7 @@ class AgentCoordinator:
         enable_phase9: bool = True,
         enable_phase10: bool = True,
         enable_phase11: bool = True,
+        enable_phase12: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -116,6 +127,7 @@ class AgentCoordinator:
         self.enable_phase9 = enable_phase9
         self.enable_phase10 = enable_phase10
         self.enable_phase11 = enable_phase11
+        self.enable_phase12 = enable_phase12
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -257,6 +269,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase11d_assistant_summary",
                 make_personal_assistant_summary_node(self.llm),
+            )
+
+        # Phase 12 (always included if enabled)
+        if self.enable_phase12:
+            graph.add_node(
+                "phase12a_channel_manager",
+                make_channel_manager_node(self.llm),
+            )
+            graph.add_node(
+                "phase12b_message_router",
+                make_message_router_node(self.llm),
+            )
+            graph.add_node(
+                "phase12c_tool_bridge",
+                make_tool_bridge_node(self.llm),
+            )
+            graph.add_node(
+                "phase12d_multichannel_summary",
+                make_multichannel_summary_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -490,7 +521,18 @@ class AgentCoordinator:
             graph.add_edge("phase11a_user_profile", "phase11b_predictive_assistance")
             graph.add_edge("phase11b_predictive_assistance", "phase11c_autonomous_action")
             graph.add_edge("phase11c_autonomous_action", "phase11d_assistant_summary")
-            graph.add_edge("phase11d_assistant_summary", END)
+
+            if self.enable_phase12:
+                graph.add_edge("phase11d_assistant_summary", "phase12a_channel_manager")
+            else:
+                graph.add_edge("phase11d_assistant_summary", END)
+
+        # Phase 12 edges (if enabled)
+        if self.enable_phase12:
+            graph.add_edge("phase12a_channel_manager", "phase12b_message_router")
+            graph.add_edge("phase12b_message_router", "phase12c_tool_bridge")
+            graph.add_edge("phase12c_tool_bridge", "phase12d_multichannel_summary")
+            graph.add_edge("phase12d_multichannel_summary", END)
 
         return graph.compile()
 
