@@ -4,7 +4,35 @@ A modern, extensible AGI framework built on principles of modular agents, unifie
 
 **Status**: Phase 1 (NLP Foundation) ✅ | Phase 2-4 in development
 
-## Quick Start
+## 🚀 Quick Start
+
+### Mobile + Backend (Recommended)
+
+**Deploy the complete system with web and mobile apps:**
+
+1. **Start Backend Server**:
+```bash
+cd backend
+pip install -r requirements.txt
+python server.py
+# Server runs on http://localhost:8000
+```
+
+2. **Build Android APK**:
+```bash
+cd mobile
+chmod +x build-apk.sh
+./build-apk.sh  # macOS/Linux
+# or build-apk.bat for Windows
+```
+
+📱 **Full Guides:**
+- [📖 BUILD_APK_GUIDE.md](BUILD_APK_GUIDE.md) - Detailed APK building instructions
+- [📱 MOBILE_SETUP.md](MOBILE_SETUP.md) - Complete mobile app setup
+- [🌐 WEB_SETUP.md](WEB_SETUP.md) - Web frontend deployment
+- [🔧 BACKEND_QUICKSTART.md](BACKEND_QUICKSTART.md) - Backend configuration
+
+### Core AGI Framework (Legacy)
 
 ### Setup
 ```bash

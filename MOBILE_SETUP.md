@@ -370,7 +370,31 @@ Select "Debug" or "Debug Remote JS"
 
 ## 📦 Building for Release
 
-### Android APK
+### ⚡ Quick Build (Recommended)
+
+Use the provided helper scripts for easy APK building:
+
+**macOS/Linux:**
+```bash
+cd mobile
+chmod +x build-apk.sh
+./build-apk.sh
+```
+
+**Windows (PowerShell):**
+```bash
+cd mobile
+build-apk.bat
+```
+
+The script will guide you through:
+1. Checking prerequisites (Node.js, Java, Android SDK)
+2. Choosing build type (Debug/Release)
+3. Installing dependencies
+4. Building the APK
+5. Showing installation instructions
+
+### Android APK (Manual)
 
 ```bash
 cd android
@@ -387,6 +411,25 @@ cd android
 cd ..
 # Output: android/app/build/outputs/bundle/release/app-release.aab
 ```
+
+### Installing APK on Device
+
+**Method 1: Using ADB (easiest)**
+```bash
+adb install android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+**Method 2: Direct file installation**
+- Copy APK to phone via USB or email
+- Open file manager on phone
+- Tap the APK file
+- Allow installation from unknown sources (if prompted)
+
+**Method 3: Using Android Studio**
+1. Open Project
+2. Build → Build Bundle(s) / APK(s) → Build APK(s)
+3. Click Locate to open build folder
+4. Transfer APK to phone manually
 
 ### iOS App
 
