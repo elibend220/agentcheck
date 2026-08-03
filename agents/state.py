@@ -207,6 +207,14 @@ class FullAgentState(TypedDict, total=False):
     recovery_attempt_count: int
     phase8_summary: str
 
+    # === Phase 9: Explainability & Interpretability ===
+    reasoning_traces: dict[str, dict[str, Any]]
+    confidence_justifications: dict[str, dict[str, Any]]
+    decision_audit_log: list[dict[str, Any]]
+    overall_system_confidence: float
+    explainability_score: float
+    phase9_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool
