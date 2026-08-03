@@ -150,6 +150,29 @@ class FullAgentState(TypedDict, total=False):
     verification_results: list[ToolVerificationResult]
     verified_results: list[Any]
 
+    # === Phase 5: Quantum Optimization ===
+    quantum_state_created: bool
+    quantum_amplitudes: dict[str, float]
+    quantum_entanglement_matrix: dict[str, dict[str, float]]
+    quantum_tunneling_solutions: list[dict]
+    quantum_metrics: dict[str, float]
+    quantum_optimized_tools: list[str]
+    quantum_entropy: float
+    quantum_purity: float
+    phase5_summary: str
+
+    # === Phase 6: Learning & Feedback Loop ===
+    execution_outcome: str  # "success", "partial", "failure"
+    outcome_confidence: float
+    lessons_learned: list[str]
+    tool_performance_scores: dict[str, float]
+    phase_performance_scores: dict[str, float]
+    improvement_suggestions: list[str]
+    effective_tool_combinations: list[list[str]]
+    failure_analysis: dict[str, Any]
+    learning_metrics: dict[str, float]
+    phase6_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool

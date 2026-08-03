@@ -186,7 +186,7 @@ def test_pipeline_with_dry_run():
 def test_pipeline_llm_call_count():
     """Test that each phase calls the LLM appropriate number of times."""
     llm = FakeLLM()
-    coordinator = AgentCoordinator(llm, enable_phase4=False)
+    coordinator = AgentCoordinator(llm, enable_phase4=False, enable_phase6=False)
 
     state: FullAgentState = {
         "input_text": "test input"
@@ -194,7 +194,7 @@ def test_pipeline_llm_call_count():
 
     result = coordinator.invoke(state)
 
-    # Without Phase 4: Phase 1, 2, 3a, 3b, 3c = 5 nodes
+    # Without Phase 4 and Phase 6: Phase 1, 2, 3a, 3b, 3c = 5 nodes
     # Each node calls LLM once
     assert llm.call_count == 5
 

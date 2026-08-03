@@ -14,6 +14,7 @@ from agents.phase4a_tool_selection import make_tool_selection_node
 from agents.phase4b_tool_execution import make_tool_execution_node
 from agents.phase4c_tool_verification import make_tool_verification_node
 from agents.phase5_quantum import make_quantum_optimization_node, make_phase5_summary_node
+from agents.phase6_learning import make_learning_feedback_node, make_phase6_summary_node
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
 
@@ -22,7 +23,7 @@ LLMFn = Callable[[str], str]
 
 class AgentCoordinator:
     """
-    Orchestrates all 5 phases:
+    Orchestrates all 6 phases:
 
     Phase 1: NLP (intent, entities)
     Phase 2: Knowledge (semantic retrieval)
@@ -34,6 +35,8 @@ class AgentCoordinator:
     Phase 4c: Tool Verification (validate results)
     Phase 5a: Quantum Optimization (superposition, entanglement, tunneling, amplification, annealing)
     Phase 5b: Quantum Summary (report quantum metrics)
+    Phase 6a: Learning & Feedback Loop (analyze results, extract lessons)
+    Phase 6b: Learning Summary (report insights and recommendations)
     """
 
     def __init__(
@@ -43,6 +46,7 @@ class AgentCoordinator:
         safety_validator: SafetyValidator = None,
         enable_phase4: bool = True,
         enable_phase5: bool = True,
+        enable_phase6: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -50,6 +54,7 @@ class AgentCoordinator:
         self.safety_validator = safety_validator or SafetyValidator()
         self.enable_phase4 = enable_phase4 and (tool_registry is not None)
         self.enable_phase5 = enable_phase5 and self.enable_phase4
+        self.enable_phase6 = enable_phase6
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -91,6 +96,17 @@ class AgentCoordinator:
                 make_phase5_summary_node(self.llm),
             )
 
+        # Phase 6 (always included if enabled)
+        if self.enable_phase6:
+            graph.add_node(
+                "phase6a_learning_feedback",
+                make_learning_feedback_node(self.llm),
+            )
+            graph.add_node(
+                "phase6b_learning_summary",
+                make_phase6_summary_node(self.llm),
+            )
+
         # Edges: sequential pipeline
         graph.set_entry_point("phase1_nlp")
         graph.add_edge("phase1_nlp", "phase2_knowledge")
@@ -106,11 +122,27 @@ class AgentCoordinator:
             if self.enable_phase5:
                 graph.add_edge("phase4c_tool_verification", "phase5a_quantum_optimization")
                 graph.add_edge("phase5a_quantum_optimization", "phase5b_quantum_summary")
-                graph.add_edge("phase5b_quantum_summary", END)
+
+                if self.enable_phase6:
+                    graph.add_edge("phase5b_quantum_summary", "phase6a_learning_feedback")
+                    graph.add_edge("phase6a_learning_feedback", "phase6b_learning_summary")
+                    graph.add_edge("phase6b_learning_summary", END)
+                else:
+                    graph.add_edge("phase5b_quantum_summary", END)
             else:
-                graph.add_edge("phase4c_tool_verification", END)
+                if self.enable_phase6:
+                    graph.add_edge("phase4c_tool_verification", "phase6a_learning_feedback")
+                    graph.add_edge("phase6a_learning_feedback", "phase6b_learning_summary")
+                    graph.add_edge("phase6b_learning_summary", END)
+                else:
+                    graph.add_edge("phase4c_tool_verification", END)
         else:
-            graph.add_edge("phase3c_creativity", END)
+            if self.enable_phase6:
+                graph.add_edge("phase3c_creativity", "phase6a_learning_feedback")
+                graph.add_edge("phase6a_learning_feedback", "phase6b_learning_summary")
+                graph.add_edge("phase6b_learning_summary", END)
+            else:
+                graph.add_edge("phase3c_creativity", END)
 
         return graph.compile()
 
