@@ -32,6 +32,12 @@ from agents.phase9_explainability import (
     make_decision_audit_log_node,
     make_explainability_summary_node,
 )
+from agents.phase10_planning import (
+    make_goal_decomposition_node,
+    make_plan_generation_node,
+    make_plan_verification_node,
+    make_planning_summary_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -41,7 +47,7 @@ LLMFn = Callable[[str], str]
 
 class AgentCoordinator:
     """
-    Orchestrates all 9 phases:
+    Orchestrates all 10 phases:
 
     Phase 1: NLP (intent, entities)
     Phase 2: Knowledge (semantic retrieval)
@@ -66,6 +72,10 @@ class AgentCoordinator:
     Phase 9b: Confidence Justification (justify confidence scores)
     Phase 9c: Decision Audit Log (maintain audit trail)
     Phase 9d: Explainability Summary (report transparency metrics)
+    Phase 10a: Goal Decomposition (break goal into subgoals)
+    Phase 10b: Plan Generation (create step-by-step execution plan)
+    Phase 10c: Plan Verification (validate feasibility and risks)
+    Phase 10d: Planning Summary (report plan and strategy)
     """
 
     def __init__(
@@ -80,6 +90,7 @@ class AgentCoordinator:
         enable_phase7: bool = True,
         enable_phase8: bool = True,
         enable_phase9: bool = True,
+        enable_phase10: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -92,6 +103,7 @@ class AgentCoordinator:
         self.enable_phase7 = enable_phase7
         self.enable_phase8 = enable_phase8
         self.enable_phase9 = enable_phase9
+        self.enable_phase10 = enable_phase10
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -197,6 +209,25 @@ class AgentCoordinator:
                 make_explainability_summary_node(self.llm),
             )
 
+        # Phase 10 (always included if enabled)
+        if self.enable_phase10:
+            graph.add_node(
+                "phase10a_goal_decomposition",
+                make_goal_decomposition_node(self.llm),
+            )
+            graph.add_node(
+                "phase10b_plan_generation",
+                make_plan_generation_node(self.llm),
+            )
+            graph.add_node(
+                "phase10c_plan_verification",
+                make_plan_verification_node(self.llm),
+            )
+            graph.add_node(
+                "phase10d_planning_summary",
+                make_planning_summary_node(self.llm),
+            )
+
         # Edges: sequential pipeline
         graph.set_entry_point("phase1_nlp")
         graph.add_edge("phase1_nlp", "phase2_knowledge")
@@ -228,7 +259,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase7c_memory_summary", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase7c_memory_summary", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase7c_memory_summary", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase7c_memory_summary", END)
                     else:
                         if self.enable_phase8:
                             graph.add_edge("phase6b_learning_summary", "phase8a_error_detection")
@@ -236,7 +270,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase6b_learning_summary", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase6b_learning_summary", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase6b_learning_summary", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase6b_learning_summary", END)
                 else:
                     if self.enable_phase7:
                         graph.add_edge("phase5b_quantum_summary", "phase7a_memory_persistence")
@@ -249,7 +286,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase7c_memory_summary", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase7c_memory_summary", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase7c_memory_summary", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase7c_memory_summary", END)
                     else:
                         if self.enable_phase8:
                             graph.add_edge("phase5b_quantum_summary", "phase8a_error_detection")
@@ -257,7 +297,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase5b_quantum_summary", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase5b_quantum_summary", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase5b_quantum_summary", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase5b_quantum_summary", END)
             else:
                 if self.enable_phase6:
                     graph.add_edge("phase4c_tool_verification", "phase6a_learning_feedback")
@@ -274,7 +317,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase7c_memory_summary", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase7c_memory_summary", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase7c_memory_summary", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase7c_memory_summary", END)
                     else:
                         if self.enable_phase8:
                             graph.add_edge("phase6b_learning_summary", "phase8a_error_detection")
@@ -282,7 +328,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase6b_learning_summary", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase6b_learning_summary", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase6b_learning_summary", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase6b_learning_summary", END)
                 else:
                     if self.enable_phase7:
                         graph.add_edge("phase4c_tool_verification", "phase7a_memory_persistence")
@@ -295,7 +344,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase7c_memory_summary", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase7c_memory_summary", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase7c_memory_summary", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase7c_memory_summary", END)
                     else:
                         if self.enable_phase8:
                             graph.add_edge("phase4c_tool_verification", "phase8a_error_detection")
@@ -303,7 +355,10 @@ class AgentCoordinator:
                             if self.enable_phase9:
                                 graph.add_edge("phase4c_tool_verification", "phase9a_reasoning_traces")
                             else:
-                                graph.add_edge("phase4c_tool_verification", END)
+                                if self.enable_phase10:
+                                    graph.add_edge("phase4c_tool_verification", "phase10a_goal_decomposition")
+                                else:
+                                    graph.add_edge("phase4c_tool_verification", END)
         else:
             if self.enable_phase6:
                 graph.add_edge("phase3c_creativity", "phase6a_learning_feedback")
@@ -320,7 +375,10 @@ class AgentCoordinator:
                         if self.enable_phase9:
                             graph.add_edge("phase7c_memory_summary", "phase9a_reasoning_traces")
                         else:
-                            graph.add_edge("phase7c_memory_summary", END)
+                            if self.enable_phase10:
+                                graph.add_edge("phase7c_memory_summary", "phase10a_goal_decomposition")
+                            else:
+                                graph.add_edge("phase7c_memory_summary", END)
                 else:
                     if self.enable_phase8:
                         graph.add_edge("phase6b_learning_summary", "phase8a_error_detection")
@@ -328,7 +386,10 @@ class AgentCoordinator:
                         if self.enable_phase9:
                             graph.add_edge("phase6b_learning_summary", "phase9a_reasoning_traces")
                         else:
-                            graph.add_edge("phase6b_learning_summary", END)
+                            if self.enable_phase10:
+                                graph.add_edge("phase6b_learning_summary", "phase10a_goal_decomposition")
+                            else:
+                                graph.add_edge("phase6b_learning_summary", END)
             else:
                 if self.enable_phase7:
                     graph.add_edge("phase3c_creativity", "phase7a_memory_persistence")
@@ -341,7 +402,10 @@ class AgentCoordinator:
                         if self.enable_phase9:
                             graph.add_edge("phase7c_memory_summary", "phase9a_reasoning_traces")
                         else:
-                            graph.add_edge("phase7c_memory_summary", END)
+                            if self.enable_phase10:
+                                graph.add_edge("phase7c_memory_summary", "phase10a_goal_decomposition")
+                            else:
+                                graph.add_edge("phase7c_memory_summary", END)
                 else:
                     if self.enable_phase8:
                         graph.add_edge("phase3c_creativity", "phase8a_error_detection")
@@ -349,7 +413,10 @@ class AgentCoordinator:
                         if self.enable_phase9:
                             graph.add_edge("phase3c_creativity", "phase9a_reasoning_traces")
                         else:
-                            graph.add_edge("phase3c_creativity", END)
+                            if self.enable_phase10:
+                                graph.add_edge("phase3c_creativity", "phase10a_goal_decomposition")
+                            else:
+                                graph.add_edge("phase3c_creativity", END)
 
         # Phase 8 edges (if enabled)
         if self.enable_phase8:
@@ -360,14 +427,28 @@ class AgentCoordinator:
             if self.enable_phase9:
                 graph.add_edge("phase8d_recovery_summary", "phase9a_reasoning_traces")
             else:
-                graph.add_edge("phase8d_recovery_summary", END)
+                if self.enable_phase10:
+                    graph.add_edge("phase8d_recovery_summary", "phase10a_goal_decomposition")
+                else:
+                    graph.add_edge("phase8d_recovery_summary", END)
 
         # Phase 9 edges (if enabled)
         if self.enable_phase9:
             graph.add_edge("phase9a_reasoning_traces", "phase9b_confidence_justification")
             graph.add_edge("phase9b_confidence_justification", "phase9c_decision_audit_log")
             graph.add_edge("phase9c_decision_audit_log", "phase9d_explainability_summary")
-            graph.add_edge("phase9d_explainability_summary", END)
+
+            if self.enable_phase10:
+                graph.add_edge("phase9d_explainability_summary", "phase10a_goal_decomposition")
+            else:
+                graph.add_edge("phase9d_explainability_summary", END)
+
+        # Phase 10 edges (if enabled)
+        if self.enable_phase10:
+            graph.add_edge("phase10a_goal_decomposition", "phase10b_plan_generation")
+            graph.add_edge("phase10b_plan_generation", "phase10c_plan_verification")
+            graph.add_edge("phase10c_plan_verification", "phase10d_planning_summary")
+            graph.add_edge("phase10d_planning_summary", END)
 
         return graph.compile()
 

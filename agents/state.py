@@ -215,6 +215,22 @@ class FullAgentState(TypedDict, total=False):
     explainability_score: float
     phase9_summary: str
 
+    # === Phase 10: Autonomous Planning & Goal Decomposition ===
+    primary_goal: str
+    subgoals: list[str]
+    goal_hierarchy: dict[str, Any]
+    execution_plan: list[str]
+    plan_steps: int
+    critical_path: list[str]
+    plan_estimated_duration: int
+    plan_resource_requirements: dict[str, Any]
+    plan_feasibility: float
+    plan_risks: list[str]
+    contingencies: list[str]
+    plan_valid: bool
+    verification_confidence: float
+    phase10_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool
