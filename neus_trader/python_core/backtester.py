@@ -248,35 +248,26 @@ class HistoricalBacktester:
             self.logger.warning(f"Error processing candle: {e}")
 
     def _get_signal_phase1(self, candle: pd.Series) -> Optional[Dict]:
-        """Generate signal using Phase 1 single agent logic."""
-        self._close_prices.append(candle['close'])
-        if len(self._close_prices) > 100:
-            self._close_prices.pop(0)
+        """Generate signal using engine's on_candle method (not hardcoded)."""
+        # IMPROVED: Use engine's actual signal generation logic
+        signal = self.engine.on_candle(
+            timestamp=candle['timestamp'],
+            open_price=candle['open'],
+            high=candle['high'],
+            low=candle['low'],
+            close=candle['close'],
+            volume=candle['volume'],
+            atr=0.0
+        )
 
-        if len(self._close_prices) < 30:
-            return None
+        if signal:
+            return {
+                'direction': signal.direction,
+                'confidence': signal.confidence,
+                'source': 'engine_signal',
+                'signal_quality': getattr(signal, 'signal_quality', 'UNKNOWN')
+            }
 
-        # Calculate EMAs
-        ema9 = self._calc_ema(self._close_prices[-30:], 9)
-        ema21 = self._calc_ema(self._close_prices[-30:], 21)
-
-        if self._prev_ema9 is None:
-            self._prev_ema9 = ema9
-            self._prev_ema21 = ema21
-            return None
-
-        # Crossover signals
-        if self._prev_ema9 <= self._prev_ema21 and ema9 > ema21:
-            self._prev_ema9 = ema9
-            self._prev_ema21 = ema21
-            return {'direction': 'LONG', 'confidence': 0.6, 'source': 'ema_crossover'}
-        elif self._prev_ema9 >= self._prev_ema21 and ema9 < ema21:
-            self._prev_ema9 = ema9
-            self._prev_ema21 = ema21
-            return {'direction': 'SHORT', 'confidence': 0.6, 'source': 'ema_crossover'}
-
-        self._prev_ema9 = ema9
-        self._prev_ema21 = ema21
         return None
 
     def _calc_ema(self, prices: List[float], period: int) -> float:
