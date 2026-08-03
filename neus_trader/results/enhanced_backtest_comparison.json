@@ -1,0 +1,38 @@
+{
+  "timestamp": "2026-08-03T15:01:28.219291",
+  "data_points": 9,
+  "traditional": {
+    "strategy": "EMA_ONLY",
+    "total_trades": 4690,
+    "winning_trades": 1514,
+    "losing_trades": 3176,
+    "win_rate": 0.3228144989339019,
+    "total_pnl": 33.924953281806665,
+    "total_pnl_pct": 0.33924953281806663,
+    "final_capital": 10033.924953281807,
+    "initial_capital": 10000.0
+  },
+  "enhanced": {
+    "strategy": "EMA_FLOW",
+    "total_trades": 8092,
+    "winning_trades": 2897,
+    "losing_trades": 5195,
+    "win_rate": 0.35800790904597135,
+    "total_pnl": -10000.0,
+    "total_pnl_pct": -100.0,
+    "final_capital": 1.683486637984022e-26,
+    "initial_capital": 10000.0,
+    "signal_stats": {
+      "ema_only": 0,
+      "ema_flow_combined": 3518,
+      "flow_only": 10226
+    }
+  },
+  "comparison": {
+    "trade_reduction_pct": 72.53731343283583,
+    "win_rate_improvement_pct": 3.5193410112069445,
+    "pnl_improvement_usd": -10033.924953281807,
+    "pnl_improvement_pct": -100.33924953281807,
+    "efficiency_improvement": -1.2430218985387758
+  }
+}
