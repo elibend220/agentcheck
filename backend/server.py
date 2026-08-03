@@ -1,4 +1,4 @@
-"""FastAPI backend server for JARVIS AGI system."""
+"""FastAPI backend server for JARVIS AGI system with user sandboxing and offline support."""
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -11,6 +11,12 @@ from agents.state import FullAgentState
 from tools.schema import ToolRegistry
 import uuid
 import logging
+import time
+
+# Import new modules
+from user_manager import UserManager
+from search_engine import SearchEngine
+from offline_support import OfflineStorage
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -32,15 +38,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Initialize managers
+user_manager = UserManager()
+search_engine = SearchEngine(enable_web_search=True)
+offline_storage = OfflineStorage(db_path="jarvis_offline.db")
+
 # ============================================================================
 # Data Models
 # ============================================================================
-
-class ChatRequest(BaseModel):
-    """Request model for chat endpoint."""
-    message: str
-    session_id: Optional[str] = None
-    enable_phases: Optional[Dict[str, bool]] = None
 
 class ChatResponse(BaseModel):
     """Response model for chat endpoint."""
@@ -84,6 +89,81 @@ class SystemStatus(BaseModel):
     phases_enabled: int
     uptime_seconds: float
     sessions_active: int
+
+# ============================================================================
+# User and Sandboxing Models
+# ============================================================================
+
+class CreateUserRequest(BaseModel):
+    """Request to create user."""
+    username: str
+    email: Optional[str] = None
+
+class UserResponse(BaseModel):
+    """User response model."""
+    user_id: str
+    username: str
+    email: Optional[str] = None
+    created_at: str
+    sessions_count: int
+
+class UserStatsResponse(BaseModel):
+    """User statistics response."""
+    user_id: str
+    username: str
+    total_sessions: int
+    total_messages: int
+    total_searches: int
+    active_sessions: List[str]
+
+# ============================================================================
+# Search Models
+# ============================================================================
+
+class SearchRequest(BaseModel):
+    """Search request model."""
+    query: str
+    session_id: str
+    user_id: Optional[str] = None
+    autonomous: bool = False
+    use_cache: bool = True
+    offline_mode: bool = False
+
+class SearchResult(BaseModel):
+    """Search result model."""
+    query: str
+    results: List[Dict[str, Any]]
+    source: str  # "web", "cache", "offline"
+    autonomous: bool
+    timestamp: str
+    result_count: int
+
+# ============================================================================
+# Offline/Sync Models
+# ============================================================================
+
+class SyncAction(BaseModel):
+    """Sync action for offline support."""
+    user_id: str
+    session_id: str
+    action: str  # "send_message", "create_session", etc.
+    data: Dict[str, Any]
+    timestamp: str
+
+class OfflineStatsResponse(BaseModel):
+    """Offline storage statistics."""
+    offline_messages: int
+    cached_searches: int
+    pending_syncs: int
+    db_file: str
+
+class ChatRequest(BaseModel):
+    """Request model for chat endpoint."""
+    message: str
+    session_id: Optional[str] = None
+    user_id: Optional[str] = None
+    enable_phases: Optional[Dict[str, bool]] = None
+    offline_mode: bool = False
 
 # ============================================================================
 # Session Management
@@ -192,16 +272,40 @@ async def root():
         "websocket": "/ws/{session_id}"
     }
 
-@app.get("/status", tags=["System"], response_model=SystemStatus)
+@app.get("/status", tags=["System"])
 async def get_status():
-    """Get system status."""
-    return SystemStatus(
-        status="online",
-        version="1.0.0",
-        phases_enabled=23,
-        uptime_seconds=session_manager.get_uptime(),
-        sessions_active=len(session_manager.sessions),
-    )
+    """Get system status with full infrastructure details."""
+    offline_stats = offline_storage.get_offline_stats()
+    search_stats = search_engine.get_cache_stats()
+    all_user_stats = user_manager.get_all_user_stats()
+
+    return {
+        "status": "online",
+        "version": "1.0.0",
+        "phases_enabled": 23,
+        "uptime_seconds": session_manager.get_uptime(),
+        "sessions_active": len(session_manager.sessions),
+        "infrastructure": {
+            "user_sandboxing": {
+                "enabled": True,
+                "users": len(all_user_stats),
+                "total_user_sessions": sum(u.get("total_sessions", 0) for u in all_user_stats.values()),
+                "total_messages": sum(u.get("total_messages", 0) for u in all_user_stats.values()),
+            },
+            "offline_support": {
+                "enabled": True,
+                "cached_messages": offline_stats.get("offline_messages", 0),
+                "cached_searches": offline_stats.get("cached_searches", 0),
+                "pending_syncs": offline_stats.get("pending_syncs", 0),
+            },
+            "search": {
+                "enabled": True,
+                "cache_size": search_stats.get("cache_size_bytes", 0),
+                "cached_queries": search_stats.get("cached_queries", 0),
+                "total_searches": search_stats.get("total_searches", 0),
+            },
+        }
+    }
 
 @app.post("/session/create", tags=["Session"])
 async def create_session():
@@ -234,18 +338,57 @@ async def get_session_history(session_id: str):
 
 @app.post("/chat", tags=["Chat"], response_model=ChatResponse)
 async def chat(request: ChatRequest):
-    """Send a message and get a response."""
-    import time
-
+    """Send a message and get a response with optional user sandboxing."""
     start_time = time.time()
 
-    # Get or create session
-    if not request.session_id:
-        request.session_id = session_manager.create_session()
+    # Handle user sandboxing
+    if request.user_id:
+        user = user_manager.get_user(request.user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
-    session = session_manager.get_session(request.session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+        # Create session in user sandbox if needed
+        if not request.session_id:
+            request.session_id = user_manager.create_user_session(request.user_id)
+        else:
+            # Verify session ownership
+            owner_id = user_manager.get_session_user(request.session_id)
+            if owner_id != request.user_id:
+                raise HTTPException(status_code=403, detail="Access denied")
+
+        # Record message in user sandbox
+        user_manager.add_message_to_session(request.session_id, "user", request.message)
+
+        # Check for autonomous search
+        context = user.get_session(request.session_id)["messages"] if request.session_id else []
+        needs_search, search_query = search_engine.autonomous_search_decision(
+            request.message, context
+        )
+
+        if needs_search and search_query and not request.offline_mode:
+            search_result = search_engine.search(
+                query=search_query,
+                autonomous=True,
+                offline_mode=request.offline_mode,
+            )
+            user_manager.record_search(
+                request.session_id,
+                search_query,
+                search_result["results"],
+                search_result["source"],
+            )
+            logger.info(f"Autonomous search for '{search_query}' in session {request.session_id}")
+
+    else:
+        # Legacy mode without user sandboxing
+        if not request.session_id:
+            request.session_id = session_manager.create_session()
+
+        session = session_manager.get_session(request.session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+
+        session_manager.add_message(request.session_id, "user", request.message)
 
     # Create coordinator with specified phases
     phase_config = request.enable_phases or {}
@@ -274,15 +417,15 @@ async def chat(request: ChatRequest):
         enable_phase23=phase_config.get("enable_phase23", True),
     )
 
-    # Add user message to history
-    session_manager.add_message(request.session_id, "user", request.message)
-
     # Execute coordinator
     state: FullAgentState = {
         "input_text": request.message,
         "core_mission": "Help users effectively and safely",
         "core_values": ["safety", "helpfulness", "honesty"],
-        "user_profile": {"session_id": request.session_id},
+        "user_profile": {
+            "session_id": request.session_id,
+            "user_id": request.user_id,
+        },
     }
 
     try:
@@ -292,7 +435,19 @@ async def chat(request: ChatRequest):
         response_text = result.get("phase19_summary", "") or result.get("conversational_response", "") or "Processing complete."
 
         # Add assistant response to history
-        session_manager.add_message(request.session_id, "assistant", response_text)
+        if request.user_id:
+            user_manager.add_message_to_session(request.session_id, "assistant", response_text)
+        else:
+            session_manager.add_message(request.session_id, "assistant", response_text)
+
+        # Save to offline storage for offline access
+        offline_storage.save_message(
+            request.user_id or "anonymous",
+            request.session_id,
+            "assistant",
+            response_text,
+            str(uuid.uuid4()),
+        )
 
         # Calculate execution time
         execution_time_ms = (time.time() - start_time) * 1000
@@ -319,6 +474,227 @@ async def chat(request: ChatRequest):
     except Exception as e:
         logger.error(f"Error processing message: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# ============================================================================
+# User Management Endpoints (Sandboxing)
+# ============================================================================
+
+@app.post("/users/create", tags=["Users"])
+async def create_user(request: CreateUserRequest):
+    """Create new user sandbox."""
+    user_id = user_manager.create_user(request.username, request.email)
+    return {
+        "user_id": user_id,
+        "username": request.username,
+        "email": request.email,
+        "message": "User sandbox created"
+    }
+
+@app.get("/users/{user_id}", tags=["Users"], response_model=UserResponse)
+async def get_user_info(user_id: str):
+    """Get user information."""
+    user = user_manager.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return UserResponse(
+        user_id=user_id,
+        username=user.username,
+        email=None,
+        created_at=user.created_at.isoformat(),
+        sessions_count=len(user.sessions),
+    )
+
+@app.get("/users/{user_id}/stats", tags=["Users"], response_model=UserStatsResponse)
+async def get_user_stats(user_id: str):
+    """Get user statistics."""
+    user = user_manager.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    stats = user.get_stats()
+    return UserStatsResponse(
+        user_id=stats["user_id"],
+        username=stats["username"],
+        total_sessions=stats["total_sessions"],
+        total_messages=stats["total_messages"],
+        total_searches=stats["total_searches"],
+        active_sessions=stats["active_sessions"],
+    )
+
+@app.delete("/users/{user_id}", tags=["Users"])
+async def delete_user(user_id: str):
+    """Delete user and all their data (GDPR compliance)."""
+    success = user_manager.delete_user_data(user_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"message": "User data deleted successfully", "user_id": user_id}
+
+@app.post("/users/{user_id}/sessions/create", tags=["Sessions"])
+async def create_user_session(user_id: str):
+    """Create session within user sandbox."""
+    session_id = user_manager.create_user_session(user_id)
+    if not session_id:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return {"session_id": session_id, "user_id": user_id}
+
+@app.get("/users/{user_id}/sessions/{session_id}", tags=["Sessions"])
+async def get_user_session(user_id: str, session_id: str):
+    """Get user session information."""
+    # Verify ownership
+    owner_id = user_manager.get_session_user(session_id)
+    if owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    user = user_manager.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    session = user.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    return {
+        "session_id": session_id,
+        "user_id": user_id,
+        "created_at": session["created_at"].isoformat(),
+        "message_count": len(session["messages"]),
+    }
+
+@app.get("/users/{user_id}/sessions/{session_id}/history", tags=["Sessions"])
+async def get_user_session_history(user_id: str, session_id: str):
+    """Get user session history."""
+    # Verify ownership
+    owner_id = user_manager.get_session_user(session_id)
+    if owner_id != user_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    history = user_manager.get_session_history(session_id)
+    if "error" in history:
+        raise HTTPException(status_code=404, detail=history["error"])
+
+    return history
+
+# ============================================================================
+# Search Endpoints (Autonomous & On-Demand)
+# ============================================================================
+
+@app.post("/search", tags=["Search"], response_model=SearchResult)
+async def search(request: SearchRequest):
+    """Perform search (on-demand or autonomous)."""
+    # Verify session ownership if user_id provided
+    if request.user_id:
+        owner_id = user_manager.get_session_user(request.session_id)
+        if owner_id != request.user_id:
+            raise HTTPException(status_code=403, detail="Access denied")
+
+    result = search_engine.search(
+        query=request.query,
+        autonomous=request.autonomous,
+        use_cache=request.use_cache,
+        offline_mode=request.offline_mode,
+    )
+
+    # Record in user's sandbox
+    if request.user_id:
+        user_manager.record_search(
+            request.session_id,
+            request.query,
+            result["results"],
+            result["source"],
+        )
+
+    return SearchResult(
+        query=result["query"],
+        results=result["results"],
+        source=result["source"],
+        autonomous=result["autonomous"],
+        timestamp=result["timestamp"],
+        result_count=result["result_count"],
+    )
+
+@app.get("/search/cache-stats", tags=["Search"])
+async def get_search_cache_stats():
+    """Get search cache statistics."""
+    stats = search_engine.get_cache_stats()
+    return stats
+
+# ============================================================================
+# Offline Support Endpoints
+# ============================================================================
+
+@app.post("/sync", tags=["Offline"])
+async def sync_offline_data(actions: List[SyncAction]):
+    """Sync offline data when connection is restored."""
+    synced_count = 0
+
+    for action in actions:
+        try:
+            # Verify user ownership
+            user = user_manager.get_user(action.user_id)
+            if not user:
+                logger.warning(f"Sync failed: User {action.user_id} not found")
+                continue
+
+            # Process action based on type
+            if action.action == "send_message":
+                user_manager.add_message_to_session(
+                    action.session_id,
+                    "user",
+                    action.data.get("content", ""),
+                )
+            elif action.action == "create_session":
+                user_manager.create_user_session(action.user_id)
+            elif action.action == "search":
+                user_manager.record_search(
+                    action.session_id,
+                    action.data.get("query", ""),
+                    action.data.get("results", []),
+                    action.data.get("source", "offline"),
+                )
+
+            # Mark as synced in offline storage
+            offline_storage.mark_synced(action.data.get("action_id", ""))
+            synced_count += 1
+
+        except Exception as e:
+            logger.error(f"Sync error: {str(e)}")
+            continue
+
+    return {
+        "synced_count": synced_count,
+        "total_actions": len(actions),
+        "message": "Offline data synced"
+    }
+
+@app.get("/offline/stats", tags=["Offline"], response_model=OfflineStatsResponse)
+async def get_offline_stats():
+    """Get offline storage statistics."""
+    stats = offline_storage.get_offline_stats()
+    return OfflineStatsResponse(
+        offline_messages=stats.get("offline_messages", 0),
+        cached_searches=stats.get("cached_searches", 0),
+        pending_syncs=stats.get("pending_syncs", 0),
+        db_file=stats.get("db_file", "jarvis_offline.db"),
+    )
+
+@app.post("/offline/mode/{user_id}", tags=["Offline"])
+async def set_offline_mode(user_id: str, offline: bool):
+    """Set offline mode for user."""
+    user = user_manager.get_user(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if offline:
+        search_engine.enable_offline_mode()
+        logger.info(f"Offline mode enabled for user {user_id}")
+    else:
+        search_engine.disable_offline_mode()
+        logger.info(f"Offline mode disabled for user {user_id}")
+
+    return {"user_id": user_id, "offline_mode": offline}
 
 # ============================================================================
 # WebSocket Support
@@ -350,12 +726,25 @@ class ConnectionManager:
 connection_manager = ConnectionManager()
 
 @app.websocket("/ws/{session_id}")
-async def websocket_endpoint(websocket: WebSocket, session_id: str):
-    """WebSocket endpoint for real-time chat."""
+async def websocket_endpoint(websocket: WebSocket, session_id: str, user_id: Optional[str] = None):
+    """WebSocket endpoint for real-time chat with optional user sandboxing."""
 
-    # Create session if it doesn't exist
-    if not session_manager.get_session(session_id):
-        session_manager.create_session()
+    # Initialize session
+    if user_id:
+        user = user_manager.get_user(user_id)
+        if not user:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="User not found")
+            return
+
+        # Verify session ownership
+        owner_id = user_manager.get_session_user(session_id)
+        if owner_id and owner_id != user_id:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Access denied")
+            return
+    else:
+        # Legacy mode
+        if not session_manager.get_session(session_id):
+            session_manager.create_session()
 
     await connection_manager.connect(session_id, websocket)
 
@@ -365,6 +754,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
             "type": "connection",
             "status": "connected",
             "session_id": session_id,
+            "user_id": user_id,
             "message": "Connected to JARVIS AGI System",
         })
 
@@ -383,13 +773,36 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 "status": "analyzing",
             })
 
-            # Process message
-            import time
             start_time = time.time()
 
-            session_manager.add_message(session_id, "user", user_message)
+            # Add message to appropriate storage
+            if user_id:
+                user_manager.add_message_to_session(session_id, "user", user_message)
+            else:
+                session_manager.add_message(session_id, "user", user_message)
 
             try:
+                # Check for autonomous search
+                if user_id:
+                    user = user_manager.get_user(user_id)
+                    context = user.get_session(session_id)["messages"] if user else []
+                    needs_search, search_query = search_engine.autonomous_search_decision(
+                        user_message, context
+                    )
+
+                    if needs_search and search_query:
+                        search_result = search_engine.search(
+                            query=search_query,
+                            autonomous=True,
+                            offline_mode=False,
+                        )
+                        user_manager.record_search(
+                            session_id,
+                            search_query,
+                            search_result["results"],
+                            search_result["source"],
+                        )
+
                 coordinator = AgentCoordinator(
                     llm=get_llm_function(),
                     tool_registry=ToolRegistry(),
@@ -407,6 +820,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                     "input_text": user_message,
                     "core_mission": "Help users effectively and safely",
                     "core_values": ["safety", "helpfulness"],
+                    "user_profile": {"session_id": session_id, "user_id": user_id},
                 }
 
                 result = coordinator.invoke(state)
@@ -414,7 +828,20 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
                 response_text = result.get("phase19_summary", "") or "Processing complete."
                 execution_time_ms = (time.time() - start_time) * 1000
 
-                session_manager.add_message(session_id, "assistant", response_text)
+                # Add response to appropriate storage
+                if user_id:
+                    user_manager.add_message_to_session(session_id, "assistant", response_text)
+                else:
+                    session_manager.add_message(session_id, "assistant", response_text)
+
+                # Save to offline storage
+                offline_storage.save_message(
+                    user_id or "anonymous",
+                    session_id,
+                    "assistant",
+                    response_text,
+                    str(uuid.uuid4()),
+                )
 
                 # Send response
                 await websocket.send_json({
