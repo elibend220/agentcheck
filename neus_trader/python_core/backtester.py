@@ -426,6 +426,19 @@ class HistoricalBacktester:
 
     def _calculate_metrics(self) -> BacktestMetrics:
         """Calculate performance metrics from trades."""
+        # Calculate drawdown from equity history (works even with no trades)
+        max_drawdown_pct = 0.0
+        equity_peak = self.start_equity
+        if self.equity_history:
+            equity_peak = self.start_equity
+            running_max = self.start_equity
+            for equity in self.equity_history:
+                running_max = max(running_max, equity)
+                drawdown = (equity - running_max) / running_max
+                if drawdown < max_drawdown_pct:
+                    max_drawdown_pct = drawdown
+            equity_peak = running_max
+
         if not self.trades:
             return BacktestMetrics(
                 total_trades=0,
@@ -434,14 +447,14 @@ class HistoricalBacktester:
                 win_rate=0.0,
                 total_pnl=0.0,
                 total_pnl_pct=0.0,
-                max_drawdown_pct=0.0,
+                max_drawdown_pct=max_drawdown_pct,
                 sharpe_ratio=None,
                 avg_trade_duration_sec=0,
                 best_trade_pnl=0.0,
                 worst_trade_pnl=0.0,
                 consecutive_losses=0,
-                equity_peak=self.start_equity,
-                final_equity=self.start_equity,
+                equity_peak=equity_peak,
+                final_equity=self.start_equity if not self.equity_history else self.equity_history[-1],
                 trades=[]
             )
 
@@ -455,11 +468,6 @@ class HistoricalBacktester:
         total_pnl = sum(t['pnl'] for t in self.trades)
         final_equity = self.start_equity + total_pnl
         total_pnl_pct = total_pnl / self.start_equity
-
-        # Drawdown
-        equity_peak = max(self.equity_history) if self.equity_history else self.start_equity
-        max_drawdown = min(self.equity_history) if self.equity_history else self.start_equity
-        max_drawdown_pct = (max_drawdown - equity_peak) / equity_peak
 
         # Trade durations
         durations = [t['duration_sec'] for t in self.trades]
