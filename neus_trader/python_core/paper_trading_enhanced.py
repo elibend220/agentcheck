@@ -149,14 +149,9 @@ class EnhancedPaperTradingEngine(PaperTradingEngine):
 
         # Case 2: Institutional signal only (no EMA trigger)
         elif institutional_signal and not ema_signal:
-            # Strong institutional signal can trigger alone
-            if institutional_signal.confidence > 0.7:
-                combined_confidence = institutional_signal.confidence * 0.8  # Slightly reduce
-                direction = 'LONG' if institutional_signal.accumulation_score > 0.6 else None
-                if institutional_signal.distribution_score > 0.6:
-                    direction = None  # Don't go long on distribution
-                reason = f"Institutional {institutional_signal.flow_type} (no EMA yet)"
-                self.signal_count_flow_only += 1
+            # Disabled: Flow-only signals create too much noise without EMA confirmation
+            # Only trade when BOTH signals align (Case 3 below)
+            pass
 
         # Case 3: Both EMA and Institutional signals (BEST)
         elif ema_signal and institutional_signal:
@@ -265,18 +260,11 @@ class EnhancedPaperTradingEngine(PaperTradingEngine):
 
     def _check_position_levels(self, current_price: float, timestamp: datetime):
         """
-        Check positions for SL/TP + institutional exit signals.
+        Check positions for SL/TP levels (standard only).
 
-        Enhanced: Close positions early if institutional distribution detected.
+        Note: Institutional exit signals disabled - flow detector needs better tuning
+        before it can reliably call exits. Using standard SL/TP only.
         """
-        # Get institutional flow state
-        institutional_exit_signal = False
-        if self.use_institutional_flow and self.last_institutional_signal:
-            sig = self.last_institutional_signal
-            institutional_exit_signal = (
-                sig.distribution_score > 0.7 or sig.exit_signal
-            )
-
         for trade_id, trade in list(self.open_positions.items()):
             should_close = False
             close_reason = None
@@ -294,10 +282,6 @@ class EnhancedPaperTradingEngine(PaperTradingEngine):
                 elif current_price <= trade.stop_loss:
                     should_close = True
                     close_reason = 'stop_loss'
-                # Institutional distribution (early exit opportunity)
-                elif institutional_exit_signal:
-                    should_close = True
-                    close_reason = 'institutional_distribution'
 
             else:  # SHORT
                 # Take profit 2 (full position)
@@ -312,10 +296,6 @@ class EnhancedPaperTradingEngine(PaperTradingEngine):
                 elif current_price >= trade.stop_loss:
                     should_close = True
                     close_reason = 'stop_loss'
-                # Institutional distribution (early exit opportunity)
-                elif institutional_exit_signal:
-                    should_close = True
-                    close_reason = 'institutional_distribution'
 
             if should_close:
                 self._close_position(trade_id, current_price, close_reason, timestamp)
