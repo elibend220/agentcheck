@@ -50,6 +50,12 @@ from agents.phase12_multichannel import (
     make_tool_bridge_node,
     make_multichannel_summary_node,
 )
+from agents.phase13_dynamic_plugins import (
+    make_plugin_discovery_node,
+    make_plugin_builder_node,
+    make_plugin_installer_node,
+    make_integration_manager_node,
+)
 from learning.memory_manager import MemoryManager
 from tools.schema import ToolRegistry
 from tools.executor import SafetyValidator
@@ -59,7 +65,7 @@ LLMFn = Callable[[str], str]
 
 class AgentCoordinator:
     """
-    Orchestrates all 12 phases:
+    Orchestrates all 13 phases:
 
     Phase 1: NLP (intent, entities)
     Phase 2: Knowledge (semantic retrieval)
@@ -96,6 +102,10 @@ class AgentCoordinator:
     Phase 12b: Message Router (route messages across channels)
     Phase 12c: Tool Bridge (integrate external tools)
     Phase 12d: Multi-Channel Summary (platform-specific formatting)
+    Phase 13a: Plugin Discovery (detect missing integrations)
+    Phase 13b: Plugin Builder (create custom plugin adapters)
+    Phase 13c: Plugin Installer (manage plugin installation)
+    Phase 13d: Integration Manager (manage plugin lifecycle)
     """
 
     def __init__(
@@ -113,6 +123,7 @@ class AgentCoordinator:
         enable_phase10: bool = True,
         enable_phase11: bool = True,
         enable_phase12: bool = True,
+        enable_phase13: bool = True,
         dry_run_mode: bool = False,
     ):
         self.llm = llm
@@ -128,6 +139,7 @@ class AgentCoordinator:
         self.enable_phase10 = enable_phase10
         self.enable_phase11 = enable_phase11
         self.enable_phase12 = enable_phase12
+        self.enable_phase13 = enable_phase13
         self.dry_run_mode = dry_run_mode
 
         self.graph = self._build_graph()
@@ -288,6 +300,25 @@ class AgentCoordinator:
             graph.add_node(
                 "phase12d_multichannel_summary",
                 make_multichannel_summary_node(self.llm),
+            )
+
+        # Phase 13 (always included if enabled)
+        if self.enable_phase13:
+            graph.add_node(
+                "phase13a_plugin_discovery",
+                make_plugin_discovery_node(self.llm),
+            )
+            graph.add_node(
+                "phase13b_plugin_builder",
+                make_plugin_builder_node(self.llm),
+            )
+            graph.add_node(
+                "phase13c_plugin_installer",
+                make_plugin_installer_node(self.llm),
+            )
+            graph.add_node(
+                "phase13d_integration_manager",
+                make_integration_manager_node(self.llm),
             )
 
         # Edges: sequential pipeline
@@ -532,7 +563,18 @@ class AgentCoordinator:
             graph.add_edge("phase12a_channel_manager", "phase12b_message_router")
             graph.add_edge("phase12b_message_router", "phase12c_tool_bridge")
             graph.add_edge("phase12c_tool_bridge", "phase12d_multichannel_summary")
-            graph.add_edge("phase12d_multichannel_summary", END)
+
+            if self.enable_phase13:
+                graph.add_edge("phase12d_multichannel_summary", "phase13a_plugin_discovery")
+            else:
+                graph.add_edge("phase12d_multichannel_summary", END)
+
+        # Phase 13 edges (if enabled)
+        if self.enable_phase13:
+            graph.add_edge("phase13a_plugin_discovery", "phase13b_plugin_builder")
+            graph.add_edge("phase13b_plugin_builder", "phase13c_plugin_installer")
+            graph.add_edge("phase13c_plugin_installer", "phase13d_integration_manager")
+            graph.add_edge("phase13d_integration_manager", END)
 
         return graph.compile()
 

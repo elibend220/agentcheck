@@ -264,6 +264,25 @@ class FullAgentState(TypedDict, total=False):
     multichannel_ready: bool
     phase12_summary: str
 
+    # === Phase 13: Dynamic Plugin System & Autonomous Integration Discovery ===
+    discovered_plugins: list[str]
+    plugin_suggestions: list[str]
+    missing_integrations: list[str]
+    discovery_confidence: float
+    built_plugins: list[str]
+    plugin_specifications: dict[str, Any]
+    plugin_templates: dict[str, Any]
+    builder_ready: bool
+    plugin_build_confidence: float
+    installed_plugins: list[str]
+    plugin_status: dict[str, str]
+    installation_log: list[str]
+    installer_ready: bool
+    installation_confidence: float
+    manual_plugin_requests: list[str]
+    plugin_system_ready: bool
+    phase13_summary: str
+
     # === Cross-cutting ===
     execution_history: list[dict]
     dry_run_mode: bool
