@@ -1,88 +1,122 @@
-# agentcheck
+# agentcheck - AGI Framework
 
-A two node LangGraph pipeline: one node summarizes an article, a second
-node scores the likely credibility of its source based on the summary,
-using a local model served by Ollama.
+A modern, extensible AGI framework built on principles of modular agents, unified state management, and LLM-agnostic architecture.
 
-Written to demonstrate multi agent orchestration design in isolation,
-independent of any larger system.
+**Status**: Phase 1 (NLP Foundation) ✅ | Phase 2-4 in development
 
-## Architecture
+## 🚀 Quick Start
 
+### 🌐 GitHub Codespace (Easiest - Zero Setup!)
+
+Click to launch fully configured development environment in browser:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?repo=elibend220/agentcheck)
+
+Or:
 ```
-START -> summarize -> score_credibility -> END
+GitHub → Code → Codespaces → Create codespace on main
 ```
 
-State flows through a single `AgentState` TypedDict. Each node reads only
-the fields it needs and returns only the fields it adds, which LangGraph
-merges into the running state. Neither node holds any state of its own
-between invocations.
+**Then build APK in 3 commands:**
+```bash
+cd mobile
+eas login
+eas build --platform android
+```
 
-## Design decision: the LLM is injected, not imported
+See [🌐 CODESPACE_GUIDE.md](CODESPACE_GUIDE.md) for full Codespace guide.
 
-`agent.py` defines the graph against a plain `Callable[[str], str]`
-interface. It does not import Ollama, OpenAI, or any specific provider.
-`llm_ollama.py` is the only file that knows a real model exists; it adapts
-`ChatOllama` to that same callable interface.
+---
 
-This split exists for a concrete reason: it lets the graph's control flow,
-state propagation, and response parsing, the logic that can be wrong
-independent of any model's output quality, be verified deterministically
-in `test_graph.py` using a fake that returns fixed strings, without
-needing a running model server. Whether the real model's summaries and
-credibility judgments are *good* is a separate question that fixed test
-strings cannot answer and this suite does not claim to answer.
+### Mobile + Backend (Local Development)
 
-## Running the tests
+**Deploy the complete system with web and mobile apps:**
 
+1. **Start Backend Server**:
+```bash
+cd backend
+pip install -r requirements.txt
+python server.py
+# Server runs on http://localhost:8000
+```
+
+2. **Build Android APK (Cloud - Easiest)**:
+```bash
+cd mobile
+eas login          # One-time setup with Expo account
+eas build --platform android
+# Download APK when ready (~5-10 minutes)
+adb install app-production.apk
+```
+
+📱 **Full Guides:**
+- [🌐 CODESPACE_GUIDE.md](CODESPACE_GUIDE.md) - **BUILD IN BROWSER** - No local setup needed!
+- [⚡ QUICK_EAS_BUILD.md](mobile/QUICK_EAS_BUILD.md) - Build APK in the cloud (5 min)
+- [☁️ EAS_BUILD_GUIDE.md](EAS_BUILD_GUIDE.md) - Complete EAS Build guide
+- [📖 BUILD_APK_GUIDE.md](BUILD_APK_GUIDE.md) - Local APK building (requires Android SDK)
+- [📱 MOBILE_SETUP.md](MOBILE_SETUP.md) - Complete mobile app setup
+- [🌐 WEB_SETUP.md](WEB_SETUP.md) - Web frontend deployment
+- [🔧 BACKEND_QUICKSTART.md](BACKEND_QUICKSTART.md) - Backend configuration
+
+### Core AGI Framework (Legacy)
+
+### Setup
 ```bash
 pip install -r requirements.txt
-pytest test_graph.py -v
 ```
 
-These four tests were run and passed in the environment this project was
-built in:
-
-* the graph executes both nodes in order and populates all expected state
-  fields
-* an out of range score from a malformed model response is clamped to the
-  documented 1 to 10 scale rather than passed through
-* a response that does not match the expected `SCORE:`/`RATIONALE:` format
-  falls back to a neutral default instead of raising an exception inside
-  a graph node
-* two independent invocations do not leak state into one another
-
-None of this requires network access or a model server, by design.
-
-## Running against a real model
-
+### Using Ollama (Local)
 ```bash
+# Terminal 1: Start Ollama
 ollama pull llama3.1
 ollama serve
-python run.py path/to/article.txt
+
+# Terminal 2: Run AGI
+python main_agi.py
 ```
 
-## What was not verified in this environment
+### Using Claude (Anthropic)
+```bash
+export ANTHROPIC_API_KEY="sk-..."
+python main_agi.py --claude
+```
 
-This project was built in a sandboxed container without network access to
-Ollama's model registry and without the `ollama` binary installed. That
-means the following was not run here and should not be assumed to work
-without independent verification:
+## Architecture Overview
 
-* `llm_ollama.py` was reviewed against the `langchain-ollama` API but
-  never executed against a live Ollama server
-* `run.py` end to end, including real summarization and credibility
-  scoring output, was not produced here
-* the actual quality of the model's summaries or credibility judgments,
-  as opposed to the pipeline's ability to route and parse whatever the
-  model returns, has not been assessed at all
+See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed architecture documentation.
 
-Anyone evaluating this project should run `run.py` against a real article
-on their own machine with Ollama installed rather than take the pipeline's
-output quality on faith. The test suite proves the wiring is correct; it
-does not and cannot prove the model's judgment is good.
+```
+┌─────────────────────────────────────────────┐
+│         AGI Input (Text/Image/Audio)        │
+└────────────────────┬────────────────────────┘
+                     │
+         ┌───────────▼───────────┐
+         │   NLP Processing      │ ← Current Phase
+         │  (Intent + Entities)  │
+         └───────────┬───────────┘
+                     │
+         ┌───────────▼──────────────┐
+         │ Knowledge Retrieval      │ ← Phase 2
+         │ (Semantic Search)        │
+         └───────────┬──────────────┘
+                     │
+         ┌───────────▼──────────────┐
+         │ Reasoning & Planning     │ ← Phase 3
+         │ (Multi-step Analysis)    │
+         └───────────┬──────────────┘
+                     │
+         ┌───────────▼──────────────┐
+         │ Execution                │ ← Phase 4
+         │ (Tools, Robotics)        │
+         └───────────┬──────────────┘
+                     │
+         ┌───────────▼──────────────┐
+         │     AGI Output           │
+         │  + Memory Updates        │
+         └──────────────────────────┘
+```
 
-## Scope
+## Core Principles
 
 This is intentionally a standalone utility with no relation to any other
 project.

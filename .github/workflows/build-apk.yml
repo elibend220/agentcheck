@@ -1,0 +1,67 @@
+name: 🚀 Build JARVIS AGI APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_profile:
+        description: 'Build profile (production or preview)'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - preview
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'mobile/package-lock.json'
+
+      - name: 🔧 Install dependencies
+        working-directory: mobile
+        run: npm install
+
+      - name: ☁️ Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: 🔐 Login to Expo
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas login --non-interactive
+
+      - name: 🔨 Build APK
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform android --profile ${{ github.event.inputs.build_profile }} --non-interactive --wait
+
+      - name: 📱 Download APK
+        working-directory: mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          BUILD_ID=$(eas build:list --platform android --json | jq -r '.[0].id')
+          echo "Build ID: $BUILD_ID"
+          eas build:download $BUILD_ID --path ./app.apk
+
+      - name: 📤 Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: jarvis-agi-apk
+          path: mobile/app.apk
+          retention-days: 30
+
+      - name: 🎉 Build Complete
+        run: |
+          echo "✅ APK built successfully!"
+          echo "📱 Download from: Actions → Build JARVIS AGI APK → Artifacts → jarvis-agi-apk"

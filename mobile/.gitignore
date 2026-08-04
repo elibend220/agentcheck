@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build
+android/app/build/
+ios/Pods/
+ios/Podfile.lock
+build/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+*.iml
+
+# React Native
+.react-native-debugger
+.watchman-socket
+
+# Cache
+.cache/
+.eslintcache
+
+# Testing
+coverage/
+.coverage
+
+# Audio
+*.mp3
+*.wav
+
+# Temporary
+*.tmp
+*.temp
