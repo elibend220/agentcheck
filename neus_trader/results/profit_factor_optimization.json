@@ -1,0 +1,45 @@
+{
+  "timestamp": "2026-08-03T18:30:33.832965",
+  "optimization_type": "Profit Factor",
+  "metric": "Profit Factor (not Win Rate)",
+  "results": [
+    {
+      "symbol": "ETHUSDT",
+      "trades": 352,
+      "winning_trades": 119,
+      "losing_trades": 233,
+      "win_rate": 0.3380681818181818,
+      "total_pnl": 9.834825172480599,
+      "total_pnl_pct": 0.0009834825172480599,
+      "profit_factor": 1.1906710069701905,
+      "max_drawdown_pct": -0.00045264853018510295,
+      "sharpe_ratio": 0.2403086784798352,
+      "best_trade": 1.2488763754586245,
+      "worst_trade": -0.7839296690725726,
+      "avg_trade_pnl": 0.0279398442400017,
+      "final_equity": 10009.83482517248
+    },
+    {
+      "symbol": "BTCUSDT",
+      "trades": 351,
+      "winning_trades": 109,
+      "losing_trades": 242,
+      "win_rate": 0.31054131054131057,
+      "total_pnl": -0.8040067784877125,
+      "total_pnl_pct": -8.040067784877126e-05,
+      "profit_factor": 0.9850251976460215,
+      "max_drawdown_pct": -0.0009032135860328926,
+      "sharpe_ratio": -0.02104336694899763,
+      "best_trade": 1.0244423782626164,
+      "worst_trade": -0.8317101747299743,
+      "avg_trade_pnl": -0.0022906176025290956,
+      "final_equity": 9999.195993221512
+    }
+  ],
+  "summary": {
+    "total_symbols": 2,
+    "profitable_count": 1,
+    "best_profit_factor": 1.1906710069701905,
+    "average_profit_factor": 1.087848102308106
+  }
+}

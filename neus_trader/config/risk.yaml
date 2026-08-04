@@ -1,0 +1,73 @@
+# Risk Management Configuration
+# Phase 1: MVP with adaptive risk controls
+
+system:
+  initial_capital: 10000.0
+  currency: "USDT"
+  symbol: "ETHUSDT"
+
+risk_management:
+  # Kelly Criterion configuration
+  kelly_fraction: 0.25  # Conservative 0.25x Kelly (1/4 Kelly)
+  base_risk_per_trade: 0.015  # 1.5% risk per trade (default)
+
+  # Position sizing
+  max_position_size_pct: 0.05  # Max 5% of capital per trade
+  min_position_size: 50.0  # Minimum $50 position
+
+  # Stop loss and take profit
+  base_stop_loss_pct: 0.008  # 0.8% base stop
+  base_take_profit_pct: 0.012  # 1.2% base take profit
+
+  # Drawdown limits (circuit breakers)
+  warning_drawdown_pct: 10.0  # Warn at 10% drawdown
+  pause_drawdown_pct: 20.0  # Pause trading at 20% drawdown
+
+  # Loss limits
+  max_consecutive_losses: 3  # Reduce risk after 3 losses
+  circuit_breaker_losses: 5  # Pause after 5 consecutive losses
+  daily_loss_limit_pct: 0.03  # 3% of capital daily loss limit
+
+  # Win rate requirements
+  min_acceptable_win_rate: 0.40  # 40% minimum
+  optimal_win_rate: 0.60  # 60% target
+
+adaptive_adjustments:
+  # Volatility-based adjustments
+  volatility_adjustment_enabled: true
+  low_volatility_threshold: 0.3  # Below 0.3% = low
+  high_volatility_threshold: 1.5  # Above 1.5% = high
+
+  # Performance-based adjustments
+  performance_adjustment_enabled: true
+  lookback_trades: 20  # Use last 20 trades for performance calc
+
+  # Drawdown-based adjustments
+  drawdown_adjustment_enabled: true
+  drawdown_reduction_factor: 0.5  # Reduce position size by 50% at high drawdown
+
+market_hours:
+  prime_hours_only: false  # Allow trading outside prime hours but with reduced size
+  optimal_hours:
+    - start: 13  # London open
+      end: 17
+    - start: 20  # US close high volatility
+      end: 23
+
+monitoring:
+  latency_warning_ms: 500
+  latency_critical_ms: 2000
+  metrics_update_interval_sec: 60
+
+database:
+  use_postgres: false  # Set to true if PostgreSQL available
+  fallback_json: true
+  host: "localhost"
+  database: "neus_trader"
+  user: "trader"
+  password: "secure_password"
+
+alerts:
+  enable_critical_alerts: true
+  enable_warning_alerts: true
+  alert_buffer_size: 1000

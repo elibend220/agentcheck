@@ -1,0 +1,97 @@
+# Technical Indicators Configuration
+# Phase 1: Real-time streaming indicators for scalping
+
+indicators:
+  # Moving Averages
+  ema:
+    enabled: true
+    periods:
+      - 20   # Short-term trend
+      - 50   # Medium-term trend
+      - 200  # Long-term trend
+
+  # Momentum
+  rsi:
+    enabled: true
+    period: 14
+    overbought: 70
+    oversold: 30
+    signal_threshold: 0.65
+
+  # Volatility
+  atr:
+    enabled: true
+    period: 14
+    multiplier: 1.0  # For stop loss calculation
+
+  # Band Trading
+  bollinger_bands:
+    enabled: true
+    period: 20
+    std_dev: 2.0  # Standard deviation multiplier
+
+  # Trend
+  macd:
+    enabled: true
+    fast_period: 12
+    slow_period: 26
+    signal_period: 9
+
+  # Advanced indicators for Phase 1
+  supertrend:
+    enabled: true
+    period: 10
+    multiplier: 3.0
+    use_for_entries: true
+
+  # Volume analysis
+  vroc:
+    enabled: true  # Volume Rate of Change
+    period: 5
+    threshold: 1.5  # Volume spike multiplier
+
+  # Support/Resistance
+  support_resistance:
+    enabled: true
+    lookback_period: 50
+    percentile_support: 25  # 25th percentile
+    percentile_resistance: 75  # 75th percentile
+
+# Indicator update settings
+streaming:
+  update_frequency_ms: 100  # Update every 100ms
+  lookback_bars: 250  # Keep last 250 bars
+  online_calculation: true  # Use online/streaming algorithms
+
+# Signal generation thresholds
+signal_thresholds:
+  rsi_divergence:
+    enabled: true
+    strength_min: 0.65
+
+  vwap_cross:
+    enabled: true
+    strength_min: 0.7
+
+  volume_spike:
+    enabled: true
+    multiplier_min: 1.5
+    strength_min: 0.65
+
+  supertrend_break:
+    enabled: true
+    strength_min: 0.75
+
+  macd_cross:
+    enabled: true
+    strength_min: 0.6
+
+# Combination signals (best results in research)
+entry_signal_stack:
+  # Golden Hour Scalper entry: Dual SuperTrend + VROC + RSI
+  recommended_stack:
+    - supertrend
+    - vroc
+    - rsi_divergence
+  min_confirmations: 2
+  confidence_threshold: 0.70

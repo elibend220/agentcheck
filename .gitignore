@@ -1,3 +1,13 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Paper trading session results (generated at runtime)
+neus_trader/results/paper_trading_sessions/
+
+# Paper trading logs
+/tmp/paper_trading*.log
+/tmp/paper_trading.pid
+
+# Trade logs
+/tmp/neus_trades*.jsonl

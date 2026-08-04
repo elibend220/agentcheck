@@ -1,0 +1,48 @@
+{
+  "timestamp": "2026-08-04T08:05:27.729222",
+  "comparison": "Original \u2192 Improved \u2192 Optimized Progression",
+  "original": {
+    "trades": 194,
+    "win_rate": 0.15463917525773196,
+    "pnl": -23.730283503846387,
+    "pnl_pct": -0.0023730283503846385,
+    "profit_factor": 0.3854930842343022,
+    "drawdown": -0.002373028350385357,
+    "sharpe": -0.9166420808367204
+  },
+  "improved": {
+    "trades": 117,
+    "win_rate": 0.21367521367521367,
+    "pnl": -10.018566836007697,
+    "pnl_pct": -0.0010018566836007697,
+    "profit_factor": 0.5591637471881938,
+    "drawdown": -0.0010018566836000901,
+    "sharpe": -0.44914248930867556
+  },
+  "optimized": {
+    "trades": 82,
+    "win_rate": 0.2682926829268293,
+    "pnl": -3.3239572042662404,
+    "pnl_pct": -0.00033239572042662404,
+    "profit_factor": 0.7722375919567468,
+    "drawdown": -0.000446271563317714,
+    "sharpe": -0.17185340610987224
+  },
+  "improvements": {
+    "original_to_improved": {
+      "pf_change": 0.17367066295389166,
+      "pf_change_pct": 45.05156384292873,
+      "wr_change_pct": 5.90360384174817
+    },
+    "improved_to_optimized": {
+      "pf_change": 0.21307384476855296,
+      "pf_change_pct": 38.10580457692658,
+      "wr_change_pct": 5.461746925161562
+    },
+    "original_to_optimized": {
+      "pf_change": 0.3867445077224446,
+      "pf_change_pct": 100.32462929669106,
+      "wr_change_pct": 11.365350766909732
+    }
+  }
+}

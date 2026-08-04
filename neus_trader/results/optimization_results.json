@@ -1,0 +1,29 @@
+{
+  "timestamp": "2026-08-03T16:47:32.309805",
+  "data_period": "2026-07-04 16:52:31.813099 to 2026-08-03 16:47:31.813099",
+  "candles_tested": 8640,
+  "best_config": {
+    "name": "Golden Hour Scalper (Current)",
+    "params": "Default",
+    "trades": 370,
+    "win_rate": 0.3054054054054054,
+    "pnl": -5.10958543714144,
+    "pnl_pct": -0.0005109585437141441,
+    "drawdown": -0.0010358804985747217,
+    "sharpe": -0.12330604977872739,
+    "score": 0.12216319804266074
+  },
+  "all_results": [
+    {
+      "name": "Golden Hour Scalper (Current)",
+      "params": "Default",
+      "trades": 370,
+      "win_rate": 0.3054054054054054,
+      "pnl": -5.10958543714144,
+      "pnl_pct": -0.0005109585437141441,
+      "drawdown": -0.0010358804985747217,
+      "sharpe": -0.12330604977872739,
+      "score": 0.12216319804266074
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+# Testing dependencies for NEUS_TRADER
+
+# Core dependencies
+pandas>=1.5
+numpy>=1.24
+
+# Testing framework
+pytest>=7.0
+pytest-cov>=4.0
+pytest-xdist>=3.0
+
+# Optional: for HTML coverage reports
+coverage>=6.0

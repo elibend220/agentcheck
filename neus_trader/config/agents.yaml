@@ -1,0 +1,81 @@
+# Scalping Agent Configuration
+# Phase 1: Golden Hour Scalper with consensus voting
+
+agents:
+  momentum_agent:
+    enabled: true
+    type: "momentum"
+    weight: 0.25
+    parameters:
+      period: 5
+      threshold: 0.2
+      signal_strength_min: 0.6
+
+  mean_reversion_agent:
+    enabled: true
+    type: "mean_reversion"
+    weight: 0.20
+    parameters:
+      lookback: 20
+      std_dev_threshold: 2.0
+      reversal_strength: 0.7
+
+  volatility_agent:
+    enabled: true
+    type: "volatility"
+    weight: 0.20
+    parameters:
+      atr_period: 14
+      volatility_threshold: 0.8
+      breakout_multiplier: 1.5
+
+  arbitrage_agent:
+    enabled: false  # Disabled for Phase 1 (requires multiple venues)
+    type: "arbitrage"
+    weight: 0.15
+    parameters:
+      min_spread_pct: 0.1
+      rebalance_interval: 300  # 5 minutes
+
+  risk_agent:
+    enabled: true
+    type: "risk"
+    weight: 0.20
+    parameters:
+      max_position_pct: 0.05
+      max_leverage: 2.0
+      stop_loss_atr_multiplier: 1.0
+
+consensus:
+  voting_method: "weighted"  # weighted, majority, unanimous
+  agreement_threshold: 0.60  # 60% confidence required
+  min_agents_required: 2  # At least 2 agents must agree
+
+  # Consensus weighting
+  weights:
+    momentum: 0.25
+    mean_reversion: 0.20
+    volatility: 0.20
+    arbitrage: 0.15
+    risk: 0.20
+
+signal_generation:
+  confirmation_required: true
+  min_confirmations: 2  # Need at least 2 agents confirming
+  signal_timeout_sec: 60  # Signal expires if not executed
+
+execution:
+  immediate: true  # Execute immediately on consensus
+  slippage_tolerance_pct: 0.05  # Allow 0.05% slippage
+  max_execution_time_ms: 1000
+
+adaptation:
+  enabled: true
+  learning_rate: 0.1
+  performance_metric: "sharpe_ratio"  # Optimize for Sharpe ratio
+  rebalance_frequency_trades: 50  # Rebalance weights every 50 trades
+
+logging:
+  log_all_signals: true
+  log_rejected_signals: true
+  log_level: "INFO"  # INFO, DEBUG, WARNING

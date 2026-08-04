@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-08-03T16:44:37.066063",
+  "data_source": "Binance Real Data",
+  "period": "2026-07-27 16:49:36.955330 to 2026-08-03 16:44:36.955330",
+  "candles": 2016,
+  "total_trades": 82,
+  "winning_trades": 22,
+  "losing_trades": 60,
+  "win_rate": 0.2682926829268293,
+  "total_pnl": -1.6595426144132626,
+  "total_pnl_pct": -0.00016595426144132625,
+  "final_equity": 9998.340457385586,
+  "max_drawdown_pct": -0.00035714006965969786,
+  "sharpe_ratio": -0.1973740047652371
+}

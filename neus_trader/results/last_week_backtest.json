@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-08-03T16:55:26.076440",
+  "backtest_type": "Last Week Real Data",
+  "period": {
+    "start": "2026-07-27T16:55:25.963583",
+    "end": "2026-08-03T16:50:25.963583",
+    "days": 7,
+    "candles": 2016
+  },
+  "metrics": {
+    "total_trades": 83,
+    "winning_trades": 21,
+    "losing_trades": 62,
+    "win_rate": 0.25301204819277107,
+    "total_pnl": -3.184127449037905,
+    "total_pnl_pct": -0.00031841274490379047,
+    "final_equity": 9996.815872550962,
+    "max_drawdown_pct": -0.0004782452636884045,
+    "sharpe_ratio": -0.3536901596508147,
+    "consecutive_losses": 1,
+    "best_trade_pnl": 0.8718651125391311,
+    "worst_trade_pnl": -0.7048674902580413,
+    "avg_trade_duration_sec": 889
+  }
+}

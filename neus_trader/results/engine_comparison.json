@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-08-03T19:38:09.904846",
+  "comparison": "Original vs Improved Scalping Engine",
+  "original": {
+    "trades": 169,
+    "win_rate": 0.17751479289940827,
+    "pnl": -17.739581697032406,
+    "pnl_pct": -0.0017739581697032406,
+    "profit_factor": 0.4812751070961325,
+    "drawdown": -0.0017739581697027462,
+    "sharpe": -0.6571658938103202
+  },
+  "improved": {
+    "trades": 0,
+    "win_rate": 0.0,
+    "pnl": 0.0,
+    "pnl_pct": 0.0,
+    "profit_factor": 0.0,
+    "drawdown": 0.0,
+    "sharpe": null
+  },
+  "improvements": {
+    "trade_reduction_pct": -100.0,
+    "win_rate_change_pct": -17.75147928994083,
+    "profit_factor_change": -0.4812751070961325,
+    "pnl_change": 17.739581697032406
+  }
+}
