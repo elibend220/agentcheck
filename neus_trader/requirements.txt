@@ -29,6 +29,18 @@ pytest>=7.0.0
 pytest-asyncio>=0.21.0
 pytest-cov>=4.0.0
 
+# Security & Compliance (ISO 27001, SOC 2 Type II, GDPR)
+cryptography>=41.0.0
+PyJWT>=2.8.0
+pyotp>=2.9.0
+python-dotenv>=1.0.0
+certifi>=2023.7.22
+
+# Security scanning (optional)
+bandit>=1.7.5
+detect-secrets>=1.4.0
+pip-audit>=2.6.0
+
 # Development
 black>=23.0.0
 flake8>=6.0.0
