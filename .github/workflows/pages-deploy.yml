@@ -1,13 +1,17 @@
 name: Deploy to GitHub Pages
 
+# DISABLED: This is a Python trading system, not a static site
+# To enable: Create a docs/ directory with documentation
+# Then uncomment the triggers below
+
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      - '.github/workflows/pages-deploy.yml'
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'docs/**'
+  #     - '.github/workflows/pages-deploy.yml'
 
 permissions:
   contents: read
@@ -34,8 +38,9 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'docs/'
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        if: hashFiles('docs/**') != ''  # Only deploy if docs/ exists
