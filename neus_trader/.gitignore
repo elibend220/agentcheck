@@ -1,0 +1,13 @@
+# Security audit logs (generated at runtime, 7-year retention in database)
+security/audit_logs/
+
+# Paper trading session results (generated at runtime)
+results/paper_trading_sessions/
+
+# Runtime logs
+*.log
+/tmp/
+
+# Development environment
+.env
+.env.local
