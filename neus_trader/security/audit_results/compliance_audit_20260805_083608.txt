@@ -1,0 +1,20 @@
+==================================================================================
+NEUS TRADER - COMPLIANCE AUDIT REPORT
+Generated: Wed Aug  5 08:36:08 UTC 2026
+==================================================================================
+
+
+>>> DEPENDENCY VULNERABILITY SCAN (pip-audit)
+---
+⚠ SKIPPED (pip-audit not found)
+
+>>> STATIC CODE ANALYSIS (bandit)
+---
+⚠ SKIPPED (bandit not found)
+
+>>> SECRET SCANNING (detect-secrets)
+---
+⚠ SKIPPED (detect-secrets not found)
+
+>>> CONFIGURATION VALIDATION
+---

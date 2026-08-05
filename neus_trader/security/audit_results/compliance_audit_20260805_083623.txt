@@ -1,0 +1,26 @@
+==================================================================================
+NEUS TRADER - COMPLIANCE AUDIT REPORT
+Generated: Wed Aug  5 08:36:23 UTC 2026
+==================================================================================
+
+
+>>> DEPENDENCY VULNERABILITY SCAN (pip-audit)
+---
+Found 28 known vulnerabilities in 5 packages
+✗ FAIL
+
+>>> STATIC CODE ANALYSIS (bandit)
+---
+[main]	INFO	profile include tests: None
+[main]	INFO	profile exclude tests: None
+[main]	INFO	cli include tests: None
+[main]	INFO	cli exclude tests: None
+[json]	INFO	JSON output written to file: /home/user/agentcheck/neus_trader/security/audit_results/bandit_20260805_083623.json
+⚠ Review Required
+
+>>> SECRET SCANNING (detect-secrets)
+---
+✓ PASS
+
+>>> CONFIGURATION VALIDATION
+---
