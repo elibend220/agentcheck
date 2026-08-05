@@ -33,6 +33,10 @@ class MockTradingEngine:
     def stop(self):
         pass
 
+    def on_candle(self, timestamp, open_price, high, low, close, volume, atr):
+        """Mock on_candle method for testing."""
+        return None
+
 
 class TestHistoricalBacktester:
     """Test suite for HistoricalBacktester."""
